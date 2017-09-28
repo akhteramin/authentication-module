@@ -1,3 +1,5 @@
+import jwt
+from auth.settings import SECRET_KEY, SUPERUSER
 from rest_framework import permissions
 from auth_jwt.models import Auth, Token
 from user_group.models import UserGroup

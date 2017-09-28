@@ -7,17 +7,18 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from auth.permissions import HasToken, UserPermission
+from auth.permissions import HasToken, UserPermission, permission_check
 from auth.settings import SECRET_KEY, TOKEN_LIFE_TIME, REFRESH_TOKEN_WINDOW, SUPERUSER
 
 from acl.models import ACL
+from app.models import AppList
 from services.models import ServiceList
 from user_group.models import UserGroup
 from .models import Auth, Token
 from group.models import GroupList
 
-from .serializers import BaseSerializer, ChangePasswordSerializer, SetPasswordSerializer
-from .serializers import DeactiveSerializer, LoginSerializer, TokenSerializer
+from .serializers import ReadOnlySerializer, BaseSerializer, LoginSerializer, TokenSerializer
+from .serializers import DeactiveSerializer, ChangePasswordSerializer, SetPasswordSerializer
 
 import logging
 log = logging.getLogger(__name__)
@@ -25,8 +26,8 @@ log = logging.getLogger(__name__)
 
 class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Auth.objects.filter()
-    serializer_class = BaseSerializer
-    permission_classes = (UserPermission,)
+    serializer_class = ReadOnlySerializer
+    # permission_classes = (UserPermission,)
 
 
 class Create(APIView):
@@ -42,7 +43,6 @@ class Create(APIView):
                 password = bcrypt_sha256.hash(password)
                 deviceID = serializer.validated_data['deviceID']
                 appID = serializer.validated_data['appID']
-                serializer.validated_data['is_active'] = True
 
                 response = {}
 
@@ -62,10 +62,18 @@ class Create(APIView):
                     return Response(response, status=status.HTTP_409_CONFLICT)
 
                 except Auth.DoesNotExist:
-                    serializer.save()
+                    try:
+                        # app = AppList.objects.get(id=appID)
+                        # print(app)
+                        user = Auth.objects.create(loginID=loginID, password=password, appID_id=appID, deviceID=deviceID, is_active=True)
+                        user.save()
+                        print(user)
+                    except Exception as e:
+                        print(e)
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
 
                     try:
-                        user = Auth.objects.get(id=serializer.data['id'])
+                        # user = Auth.objects.get(id=serializer.data['id'])
 
                         payload = {
                             "loginID": loginID,
@@ -82,7 +90,7 @@ class Create(APIView):
                         user.delete()
                         return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
 
-                    response['token'] = token
+                    response['message'] = "User Created Successfully!"
                     return Response(response, status=status.HTTP_201_CREATED)
 
                 except Exception as e:
@@ -92,6 +100,7 @@ class Create(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            print("here")
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -172,7 +181,6 @@ class Logout(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 class Verify(APIView):
     permission_classes = (HasToken,)
 
@@ -229,17 +237,18 @@ class Refresh(APIView):
             payload = jwt.decode(token, verify=False)
             window = int(datetime.utcnow().timestamp()) - payload['exp']
             try:
-                user = Auth.objects.get(loginID=payload['loginID'], is_active=True)
+                user = Auth.objects.get(loginID=payload['loginID'], appID=payload["appID"], is_active=True)
                 token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
 
                 if window < REFRESH_TOKEN_WINDOW:
                     new_payload = {
                         "loginID": user.loginID,
-                        "appID": user.appID,
+                        "appID": user.appID.id,
                         "deviceID": token_t.deviceID,
                         "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
                     }
 
+                    print(new_payload)
                     token = jwt.encode(new_payload, SECRET_KEY, algorithm='HS256')
                     token_t.token = token
                     token_t.save()
@@ -291,7 +300,7 @@ class ChangePassword(APIView):
 
                         new_payload = {
                             "loginID": user.loginID,
-                            "appID": user.appID,
+                            "appID": user.appID.id,
                             "deviceID": payload['deviceID'],
                             "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
                         }
