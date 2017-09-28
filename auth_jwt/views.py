@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Auth.objects.filter(appID="ADMIN")
+    queryset = Auth.objects.filter()
     serializer_class = BaseSerializer
     permission_classes = (UserPermission,)
 

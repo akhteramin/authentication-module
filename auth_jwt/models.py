@@ -1,10 +1,11 @@
 from django.db import models
+from app.models import AppList
 
 
 class Auth(models.Model):
     loginID = models.CharField(max_length=255, db_index=True)
     password = models.TextField()
-    appID = models.CharField(max_length=255)
+    appID = models.ForeignKey(AppList, on_delete=models.CASCADE, db_index=True)
     deviceID = models.TextField() # Keeping Signup Device ID
     is_active = models.BooleanField(default=True)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)

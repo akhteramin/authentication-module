@@ -1,8 +1,9 @@
 from django.db import models
+from app.models import AppList
 
 
 class ServiceList(models.Model):
-    appID = models.CharField(max_length=255)
+    appID = models.ForeignKey(AppList, on_delete=models.CASCADE, db_index=True)
     serviceID = models.CharField(unique=True, max_length=255)
     description = models.TextField(null=True)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)
