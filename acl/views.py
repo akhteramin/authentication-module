@@ -3,8 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
-from auth.permissions import ACLPermission
-from auth_jwt.views import HasToken
+from auth.permissions import HasToken, ACLPermission
 from auth.settings import SECRET_KEY, SUPERUSER
 from auth_jwt.models import Auth
 from user_group.models import UserGroup

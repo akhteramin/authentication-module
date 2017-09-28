@@ -11,11 +11,10 @@ class TokenSerializer(serializers.ModelSerializer):
 class BaseSerializer(serializers.ModelSerializer):
     loginID = serializers.CharField(min_length=5)
     password = serializers.CharField(min_length=8, write_only=True)
-    # appID = serializers.CharField(required=False)
 
     class Meta:
         model = Auth
-        fields = ('id', 'loginID', 'password', 'deviceID', 'is_active')
+        fields = ('id', 'loginID', 'password', 'appID', 'deviceID', 'is_active')
 
 
 class LoginSerializer(serializers.Serializer):

@@ -11,7 +11,7 @@ print(configFilePath)
 
 SECRET_KEY = config.get('SECURITY', 'SECRET_KEY')
 DEBUG = bool(config.get('SECURITY', 'DEBUG'))
-SUPERUSER = ['spider@ipay.com.bd', 'spider2@ipay.com.bd']
+SUPERUSER = ['superuser@ipay.com.bd']
 ALLOWED_HOSTS = ['*']
 TOKEN_LIFE_TIME = int(config.get('SECURITY', 'TOKEN_LIFE_TIME_HOUR')) * 60 * 60
 REFRESH_TOKEN_WINDOW = int(config.get('SECURITY', 'REFRESH_TOKEN_WINDOW_SEC'))
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'auth_jwt',
     'acl',
+    'app',
     'group',
     'services',
     'user_group',

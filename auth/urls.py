@@ -5,24 +5,30 @@ from rest_framework_swagger.views import get_swagger_view
 
 # from rest_framework_swagger.views import get_swagger_view
 from rest_framework import routers
+from app.views import AppViewSet
 from group.views import GroupViewSet, GroupReadOnlyViewSet
 from services.views import ServiceViewSet
-from auth_jwt.views import ReadOnlyViewSet, ReadOnlyAPP, ReadOnlyBusiness
+from auth_jwt.views import ReadOnlyViewSet
 from acl.views import ACLViewSet, GetACLViewSet
 from user_group.views import UserGroupViewSet, GetUserGroupViewSet
 
 
 router = routers.SimpleRouter()
-router.register(r'acl/details', GetACLViewSet)
+
+router.register(r'app', AppViewSet)
+
 router.register(r'acl', ACLViewSet)
-router.register(r'group/filtered', GroupReadOnlyViewSet)
+router.register(r'acl/details', GetACLViewSet)
+
 router.register(r'group', GroupViewSet)
+router.register(r'group/filtered', GroupReadOnlyViewSet)
+
 router.register(r'service', ServiceViewSet)
-router.register(r'user_group/details', GetUserGroupViewSet)
+
 router.register(r'user_group', UserGroupViewSet)
+router.register(r'user_group/details', GetUserGroupViewSet)
+
 router.register(r'user', ReadOnlyViewSet)
-router.register(r'app/user', ReadOnlyAPP)
-router.register(r'business/user', ReadOnlyBusiness)
 
 schema_view = get_swagger_view(title="Auth Module")
 
