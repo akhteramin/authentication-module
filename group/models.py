@@ -11,5 +11,5 @@ class GroupList(models.Model):
     class Meta:
         ordering = ['appID', 'groupID']
         db_table = "group_list"
-        unique_together = ('appID', 'groupID'),
         default_permissions = []
+        unique_together = ('appID', 'groupID'),

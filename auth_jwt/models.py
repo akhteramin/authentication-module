@@ -11,7 +11,7 @@ class Auth(models.Model):
     updatedAT = models.DateTimeField(auto_now_add=False, auto_now=True)
 
     class Meta:
-        ordering = ['loginID']
+        ordering = ['appID', 'loginID']
         db_table = 'auth'
         default_permissions = []
         unique_together = ('loginID', 'appID')
@@ -27,5 +27,5 @@ class Token(models.Model):
     class Meta:
         ordering = ['user']
         db_table = 'token'
-        unique_together = ('user', 'deviceID')
         default_permissions = []
+        unique_together = ('user', 'deviceID')
