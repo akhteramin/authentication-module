@@ -63,8 +63,6 @@ class Create(APIView):
 
                 except Auth.DoesNotExist:
                     try:
-                        # app = AppList.objects.get(id=appID)
-                        # print(app)
                         user = Auth.objects.create(loginID=loginID, password=password, appID_id=appID, deviceID=deviceID, is_active=True)
                         user.save()
                         print(user)
@@ -73,8 +71,6 @@ class Create(APIView):
                         return Response(status=status.HTTP_400_BAD_REQUEST)
 
                     try:
-                        # user = Auth.objects.get(id=serializer.data['id'])
-
                         payload = {
                             "loginID": loginID,
                             "appID": serializer.validated_data['appID'],
@@ -90,8 +86,8 @@ class Create(APIView):
                         user.delete()
                         return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
 
-                    response['message'] = "User Created Successfully!"
-                    return Response(response, status=status.HTTP_201_CREATED)
+                    # response['message'] = "User Created Successfully!"
+                    return Response(status=status.HTTP_201_CREATED)
 
                 except Exception as e:
                     print(e)
