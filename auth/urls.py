@@ -6,7 +6,7 @@ from rest_framework_swagger.views import get_swagger_view
 # from rest_framework_swagger.views import get_swagger_view
 from rest_framework import routers
 from app.views import AppViewSet
-from group.views import GroupViewSet, GroupReadOnlyViewSet
+from group.views import GroupViewSet, GroupReadOnlyViewSet, GetGroupViewSet
 from services.views import ServiceViewSet
 from auth_jwt.views import ReadOnlyViewSet
 from acl.views import ACLViewSet, GetACLViewSet
@@ -21,7 +21,8 @@ router.register(r'acl', ACLViewSet)
 router.register(r'acl/details', GetACLViewSet)
 
 router.register(r'group', GroupViewSet)
-router.register(r'group/filtered', GroupReadOnlyViewSet)
+# router.register(r'group/filtered', GroupReadOnlyViewSet)
+router.register(r'group/filtered/app', GetGroupViewSet)
 
 router.register(r'service', ServiceViewSet)
 

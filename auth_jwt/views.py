@@ -65,7 +65,6 @@ class Create(APIView):
                     try:
                         user = Auth.objects.create(loginID=loginID, password=password, appID_id=appID, deviceID=deviceID, is_active=True)
                         user.save()
-                        print(user)
                     except Exception as e:
                         print(e)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -96,7 +95,6 @@ class Create(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            print("here")
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

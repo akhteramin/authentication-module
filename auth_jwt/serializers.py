@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Auth, Token
+from app.models import AppList
 
 
 class TokenSerializer(serializers.ModelSerializer):

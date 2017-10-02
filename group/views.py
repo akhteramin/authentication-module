@@ -34,3 +34,15 @@ class GroupReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
         except jwt.ExpiredSignatureError:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class GetGroupViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = GroupList.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = (GroupPermission,)
+
+    @list_route(url_path='(?P<app_id>[0-9]+)')
+    def service(self, request, pk=None, app_id=None):
+        queryset = GroupList.objects.filter(appID=app_id)
+        serializer = GroupSerializer(queryset, many=True)
+        return Response(serializer.data)
