@@ -27,11 +27,11 @@ log = logging.getLogger(__name__)
 class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Auth.objects.filter()
     serializer_class = ReadOnlySerializer
-    # permission_classes = (UserPermission,)
+    permission_classes = (UserPermission,)
 
 
 class Create(APIView):
-    # permission_classes = (UserPermission,)
+    permission_classes = (UserPermission,)
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
