@@ -205,7 +205,7 @@ class Verify(APIView):
 class CheckPermission(APIView):
     def get(self, request, format=None):
         try:
-            # result = permission_check(request)
+            result = permission_check(request)
 
             if result['status_code'] == 202:
                 return Response(status=status.HTTP_202_ACCEPTED)
