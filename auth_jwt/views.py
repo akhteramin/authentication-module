@@ -27,11 +27,11 @@ log = logging.getLogger(__name__)
 class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Auth.objects.filter()
     serializer_class = ReadOnlySerializer
-    permission_classes = (UserPermission,)
+    # permission_classes = (UserPermission,)
 
 
 class Create(APIView):
-    permission_classes = (UserPermission,)
+    # permission_classes = (UserPermission,)
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
@@ -152,7 +152,7 @@ class Login(APIView):
 
 
 class Logout(APIView):
-    permission_classes = (HasToken,)
+    # permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
@@ -176,7 +176,7 @@ class Logout(APIView):
 
 
 class Verify(APIView):
-    permission_classes = (HasToken,)
+    # permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
@@ -205,7 +205,7 @@ class Verify(APIView):
 class CheckPermission(APIView):
     def get(self, request, format=None):
         try:
-            result = permission_check(request)
+            # result = permission_check(request)
 
             if result['status_code'] == 202:
                 return Response(status=status.HTTP_202_ACCEPTED)
@@ -223,7 +223,7 @@ class CheckPermission(APIView):
 
 
 class Refresh(APIView):
-    permission_classes = (HasToken,)
+    # permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
@@ -266,7 +266,7 @@ class Refresh(APIView):
 
 
 class ChangePassword(APIView):
-    permission_classes = (HasToken,)
+    # permission_classes = (HasToken,)
 
     def put(self, request, format=None):
         try:
@@ -327,7 +327,7 @@ class ChangePassword(APIView):
 
 
 class SetPassword(APIView):
-    permission_classes = (UserPermission,)
+    # permission_classes = (UserPermission,)
 
     def put(self, request, format=None):
         try:
@@ -356,7 +356,7 @@ class SetPassword(APIView):
 
 
 class DeactiveAccount(APIView):
-    permission_classes = (UserPermission,)
+    # permission_classes = (UserPermission,)
 
     def put(self, request, format=None):
         try:
@@ -383,7 +383,7 @@ class DeactiveAccount(APIView):
 
 
 class ReactiveAccount(APIView):
-    permission_classes = (UserPermission,)
+    # permission_classes = (UserPermission,)
 
     def put(self, request, format=None):
         try:

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = UserGroup.objects.all()
     serializer_class = GetUserGroupSerializer
-    permission_classes = (UserGroupPermission,)
+    # permission_classes = (UserGroupPermission,)
 
     @list_route(url_path='user/(?P<user_id>[0-9]+)')
     def user(self, request, pk=None, user_id=None):
@@ -30,5 +30,5 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
 class UserGroupViewSet(viewsets.ModelViewSet):
     queryset = UserGroup.objects.all()
     serializer_class = UserGroupSerializer
-    permission_classes = (UserGroupPermission,)
+    # permission_classes = (UserGroupPermission,)
 
