@@ -74,7 +74,7 @@ def permission_check(request, sid=None):
         else:
             return result
 
-        service = ServiceList.objects.get(serviceID=service_id)
+        service = ServiceList.objects.get(serviceID=service_id, appID=user.appID)
         groups = ACL.objects.filter(service=service.id)
 
         response['status_code'] = 401
@@ -104,7 +104,6 @@ class HasToken(permissions.BasePermission):
 
 
 # ServiceID - AUTH_APP__ALL
-# serviceName - APP MANAGEMENT
 class AppPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         result = permission_check(request, "AUTH_APP_ALL")
@@ -115,8 +114,18 @@ class AppPermission(permissions.BasePermission):
             return False
 
 
+# ServiceID - AUTH_EMAIL__ALL
+class EmailPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        result = permission_check(request, "AUTH_EMAIL_ALL")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
 # ServiceID - AUTH_USER__ALL
-# serviceName - USER MANAGEMENT
 class UserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         result = permission_check(request, "AUTH_USER_ALL")
@@ -128,7 +137,6 @@ class UserPermission(permissions.BasePermission):
 
 
 # ServiceID - AUTH_GROUP_ALL
-# serviceName - GROUP MANAGEMENT
 class GroupPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         result = permission_check(request, "AUTH_GROUP_ALL")
@@ -140,7 +148,6 @@ class GroupPermission(permissions.BasePermission):
 
 
 # ServiceID - AUTH_SERVICE_ALL
-# serviceName - SERVICE MANAGEMENT
 class ServicePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         result = permission_check(request, "AUTH_SERVICE_ALL")
@@ -152,7 +159,6 @@ class ServicePermission(permissions.BasePermission):
 
 
 # ServiceID - AUTH_USER_GROUP_ALL
-# serviceName - USER GROUP MANAGEMENT
 class UserGroupPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         result = permission_check(request, "AUTH_USER_GROUP_ALL")
@@ -164,7 +170,6 @@ class UserGroupPermission(permissions.BasePermission):
 
 
 # ServiceID - AUTH_ACL
-# serviceName - ACL MANAGEMENT
 class ACLPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         result = permission_check(request, "AUTH_ACL")

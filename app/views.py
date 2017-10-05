@@ -8,6 +8,6 @@ log = logging.getLogger(__name__)
 
 
 class AppViewSet(viewsets.ModelViewSet):
+    # permission_classes = (AppPermission,)
     queryset = AppList.objects.all()
     serializer_class = AppSerializer
-    # permission_classes = (AppPermission,)

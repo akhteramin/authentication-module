@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Auth, Token
 from app.models import AppList
+from email_domain.models import EmailDomain
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -10,9 +11,19 @@ class TokenSerializer(serializers.ModelSerializer):
 
 
 class BaseSerializer(serializers.ModelSerializer):
-    loginID = serializers.CharField(min_length=5)
+    loginID = serializers.EmailField(min_length=12)
     password = serializers.CharField(min_length=8, write_only=True)
     appID = serializers.IntegerField()
+
+    def validate_loginID(self, email):
+        domain = email.split("@")[-1]
+        try:
+            email_domain = EmailDomain.objects.get(domain=domain)
+            return email
+        except Exception as e:
+            print(e)
+            raise serializers.ValidationError("Invalid Email Domain!") 
+
 
     class Meta:
         model = Auth

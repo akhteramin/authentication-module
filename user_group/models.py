@@ -4,8 +4,9 @@ from auth_jwt.models import Auth
 
 
 class UserGroup(models.Model):
-    group = models.ForeignKey(GroupList, on_delete=models.CASCADE)
-    user = models.ForeignKey(Auth, on_delete=models.CASCADE, db_index=True)
+    group = models.ForeignKey(GroupList, on_delete=models.PROTECT)
+    user = models.ForeignKey(Auth, on_delete=models.PROTECT, db_index=True)
+    # createdBY = models.ForeignKey(Auth, on_delete=models.PROTECT)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)
     updatedAT = models.DateTimeField(auto_now_add=False, auto_now=True)
 

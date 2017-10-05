@@ -25,9 +25,9 @@ log = logging.getLogger(__name__)
 
 
 class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+    # permission_classes = (UserPermission,)
     queryset = Auth.objects.filter()
     serializer_class = ReadOnlySerializer
-    # permission_classes = (UserPermission,)
 
 
 class Create(APIView):

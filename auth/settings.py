@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'auth_jwt',
     'acl',
     'app',
+    'email_domain',
     'group',
     'services',
     'user_group',

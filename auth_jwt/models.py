@@ -5,9 +5,10 @@ from app.models import AppList
 class Auth(models.Model):
     loginID = models.CharField(max_length=255, db_index=True)
     password = models.TextField()
-    appID = models.ForeignKey(AppList, on_delete=models.CASCADE, db_index=True)
-    deviceID = models.TextField(db_index=True) # Keeping Signup Device ID
+    appID = models.ForeignKey(AppList, on_delete=models.PROTECT, db_index=True)
+    deviceID = models.TextField() # Keeping Signup Device ID
     is_active = models.BooleanField(default=True, db_index=True)
+    # createdBY = models.ForeignKey('self', on_delete=models.PROTECT)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)
     updatedAT = models.DateTimeField(auto_now_add=False, auto_now=True)
 
@@ -19,9 +20,9 @@ class Auth(models.Model):
 
 
 class Token(models.Model):
-    user = models.ForeignKey(Auth, on_delete=models.CASCADE, db_index=True)
+    user = models.ForeignKey(Auth, on_delete=models.PROTECT, db_index=True)
     token = models.TextField(null=True)
-    deviceID = models.TextField()
+    deviceID = models.TextField(db_index=True)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)
     updatedAT = models.DateTimeField(auto_now_add=False, auto_now=True)
 

@@ -6,6 +6,7 @@ from rest_framework_swagger.views import get_swagger_view
 # from rest_framework_swagger.views import get_swagger_view
 from rest_framework import routers
 from app.views import AppViewSet
+from email_domain.views import EmailViewSet
 from group.views import GroupViewSet, GetGroupViewSet
 from services.views import ServiceViewSet, GetServiceViewSet
 from auth_jwt.views import ReadOnlyViewSet
@@ -16,6 +17,7 @@ from user_group.views import UserGroupViewSet, GetUserGroupViewSet
 router = routers.SimpleRouter()
 
 router.register(r'app', AppViewSet)
+router.register(r'email/domain', EmailViewSet)
 
 router.register(r'acl', ACLViewSet)
 router.register(r'acl/details', GetACLViewSet)

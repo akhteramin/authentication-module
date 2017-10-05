@@ -17,9 +17,9 @@ log = logging.getLogger(__name__)
 
 
 class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
+    # permission_classes = (ACLPermission,)
     queryset = ACL.objects.all()
     serializer_class = GetACLSerializer
-    # permission_classes = (ACLPermission,)
 
     @list_route(url_path='service/(?P<service_id>[0-9]+)')
     def service(self, request, pk=None, service_id=None):
@@ -35,9 +35,9 @@ class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ACLViewSet(viewsets.ModelViewSet):
+    # permission_classes = (ACLPermission,)
     queryset = ACL.objects.all()
     serializer_class = ACLSerializer
-    # permission_classes = (ACLPermission,)
 
 
 class PermissionsList(APIView):
