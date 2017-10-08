@@ -1,10 +1,12 @@
 from django.conf.urls import url, include
+from django.contrib import admin
+
 from . import views
 from . import settings
-from rest_framework_swagger.views import get_swagger_view
 
-# from rest_framework_swagger.views import get_swagger_view
+from rest_framework_swagger.views import get_swagger_view
 from rest_framework import routers
+
 from app.views import AppViewSet
 from email_domain.views import EmailViewSet
 from group.views import GroupViewSet, GetGroupViewSet
@@ -14,7 +16,10 @@ from acl.views import ACLViewSet, GetACLViewSet
 from user_group.views import UserGroupViewSet, GetUserGroupViewSet
 
 
-router = routers.SimpleRouter()
+if settings.DEBUG:
+    router = routers.DefaultRouter()
+else:
+    router = routers.SimpleRouter()
 
 router.register(r'app', AppViewSet)
 router.register(r'email/domain', EmailViewSet)
@@ -33,12 +38,12 @@ router.register(r'user_group/details', GetUserGroupViewSet)
 
 router.register(r'user', ReadOnlyViewSet)
 
-schema_view = get_swagger_view(title="Auth Module")
+schema_view = get_swagger_view(title="Admin Auth Module")
 
 urlpatterns = [
     url(r'^auth/api/v1/', include(router.urls)),
-    url(r'^auth/api/v1/', include('auth_jwt.urls')),
-    url(r'^auth/api/v1/', include('acl.urls')),
+    url(r'^auth/api/v1/', include('auth_jwt.urls', namespace='jwt')),
+    url(r'^auth/api/v1/', include('acl.urls', namespace='acl')),
 ]
 
 handler400 = views.http400
@@ -48,6 +53,8 @@ handler500 = views.http500
 
 if settings.DEBUG:
     urlpatterns += [
-        url(r'^auth/api/v1/docs', schema_view),
+        url(r'^admin/', admin.site.urls),
+        url(r'^silk/', include('silk.urls', namespace='silk')),
+        url(r'^$', schema_view),
     ]
 

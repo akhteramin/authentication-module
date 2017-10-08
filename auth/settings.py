@@ -7,8 +7,6 @@ configFilePath = BASE_DIR + "/application.properties"
 config = RawConfigParser()
 config.read(configFilePath)
 
-print(configFilePath)
-
 SECRET_KEY = config.get('SECURITY', 'SECRET_KEY')
 DEBUG = bool(config.get('SECURITY', 'DEBUG'))
 SUPERUSER = ['superuser@ipay.com.bd']
@@ -26,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
+    'silk',
     'corsheaders',
     'auth_jwt',
     'acl',
@@ -36,7 +35,13 @@ INSTALLED_APPS = [
     'user_group',
 ]
 
-REST_FRAMEWORK = {
+if DEBUG:
+    REST_FRAMEWORK = {
+        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+        'PAGE_SIZE': 10,
+    }
+else:
+    REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
@@ -58,6 +63,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE += [
+        'silk.middleware.SilkyMiddleware',
+    ]
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -82,6 +92,7 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
     'token',
     'service-id',
+    'app-id',
 )
 
 ROOT_URLCONF = 'auth.urls'
@@ -223,3 +234,26 @@ LOGGING = {
         }
     }
 }
+
+
+### SILK  ###
+SILKY_PYTHON_PROFILER = True
+
+# SILKY_AUTHENTICATION = True  # User must login
+# SILKY_AUTHORISATION = True  # User must have permissions
+# SILKY_PERMISSIONS = lambda user: user.is_superuser
+
+SILKY_MAX_REQUEST_BODY_SIZE = -1  # Silk takes anything <0 as no limit
+SILKY_MAX_RESPONSE_BODY_SIZE = 1024  # If response body>1024kb, ignore
+
+SILKY_META = True
+
+if DEBUG:
+    SILKY_INTERCEPT_PERCENT = 100 # log only 100% of requests
+else:
+    SILKY_INTERCEPT_PERCENT = 0 # log only 0% of requests
+
+SILKY_MAX_RECORDED_REQUESTS = 10000
+SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
+
+# python manage.py silk_clear_request_log
