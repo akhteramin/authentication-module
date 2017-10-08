@@ -5,6 +5,7 @@ from app.models import AppList
 class ServiceList(models.Model):
     appID = models.ForeignKey(AppList, on_delete=models.PROTECT, db_index=True)
     serviceID = models.CharField(unique=True, max_length=255)
+    category = models.CharField(max_length=255, null=True)
     description = models.TextField(null=True)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)
     updatedAT = models.DateTimeField(auto_now_add=False, auto_now=True)

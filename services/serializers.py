@@ -8,4 +8,4 @@ class ServiceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ServiceList
-        fields = ('id', 'appID', 'serviceID', 'description')
+        fields = ('id', 'appID', 'serviceID', 'category', 'description')
