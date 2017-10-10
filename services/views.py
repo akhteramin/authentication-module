@@ -23,5 +23,12 @@ class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='(?P<app_id>[0-9]+)')
     def service(self, request, pk=None, app_id=None):
         queryset = ServiceList.objects.filter(appID=app_id)
-        serializer = ServiceSerializer(queryset, many=True)
+        # serializer = ServiceSerializer(queryset, many=True)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+
         return Response(serializer.data)

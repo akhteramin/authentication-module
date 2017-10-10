@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import list_route
 
 from auth.permissions import HasToken, UserPermission, permission_check
 from auth.settings import SECRET_KEY, TOKEN_LIFE_TIME, REFRESH_TOKEN_WINDOW, SUPERUSER
@@ -16,6 +17,7 @@ from services.models import ServiceList
 from user_group.models import UserGroup
 from .models import Auth, Token
 from group.models import GroupList
+
 
 from .serializers import ReadOnlySerializer, BaseSerializer, LoginSerializer, TokenSerializer
 from .serializers import DeactiveSerializer, ChangePasswordSerializer, SetPasswordSerializer
@@ -29,6 +31,35 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Auth.objects.filter()
     serializer_class = ReadOnlySerializer
 
+    @list_route(url_path='(?P<loginID>[\D]+)/(?P<appID>[0-9]+)')
+    def get(self, request, pk=None, loginID=None,appID=None):
+        if loginID is '':
+            queryset = Auth.objects.filter(appID=appID)
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(queryset, many=True)
+
+            return Response(serializer.data)
+        elif appID == '0':
+            queryset = Auth.objects.filter(loginID__icontains=loginID)
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(queryset, many=True)
+
+            return Response(serializer.data)
+        else:
+            queryset = Auth.objects.filter(loginID__icontains=loginID,appID=appID)
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(queryset, many=True)
+
+            return Response(serializer.data)
 
 class Create(APIView):
     # permission_classes = (UserPermission,)
