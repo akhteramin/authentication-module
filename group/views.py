@@ -13,7 +13,34 @@ class GroupViewSet(viewsets.ModelViewSet):
     # permission_classes = (GroupPermission,)
     queryset = GroupList.objects.all()
     serializer_class = GroupSerializer
+    @list_route(url_path='')
+    def get(self, request):
+        group_id = ''
+        app_id = ''
+        # account_status= ''
+        try:
+            group_id=request.query_params.get('group_id')
+        except ValueError:
+            group_id=''
+        try:
+            app_id=request.query_params.get('app_id')
+        except ValueError:
+            app_id=''
 
+        if group_id != '' and app_id != '':
+            queryset = GroupList.objects.filter(groupID__icontains=request.query_params.get('group_id', None),appID=request.query_params.get('app_id', None))
+        elif group_id == '' and app_id != '':
+            queryset = GroupList.objects.filter(appID=request.query_params.get('app_id', None))
+        elif group_id != '' and app_id == '':
+            queryset = GroupList.objects.filter(groupID__icontains=request.query_params.get('group_id', None))
+        else:
+            queryset = GroupList.objects.all()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class GetGroupViewSet(viewsets.ReadOnlyModelViewSet):
     # permission_classes = (GroupPermission,)
@@ -23,5 +50,9 @@ class GetGroupViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='(?P<app_id>[0-9]+)')
     def service(self, request, pk=None, app_id=None):
         queryset = GroupList.objects.filter(appID=app_id)
-        serializer = GroupSerializer(queryset, many=True)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

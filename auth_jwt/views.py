@@ -28,38 +28,39 @@ log = logging.getLogger(__name__)
 
 class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     # permission_classes = (UserPermission,)
-    queryset = Auth.objects.filter()
+    queryset = Auth.objects.all()
     serializer_class = ReadOnlySerializer
 
-    @list_route(url_path='(?P<loginID>[\D]+)/(?P<appID>[0-9]+)')
-    def get(self, request, pk=None, loginID=None,appID=None):
-        if loginID is '':
-            queryset = Auth.objects.filter(appID=appID)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(queryset, many=True)
+    @list_route(url_path='')
+    def get(self, request):
+        login_id = ''
+        app_id = ''
+        # account_status= ''
+        try:
+            login_id=request.query_params.get('login_id')
+        except ValueError:
+            login_id=''
+        try:
+            app_id=request.query_params.get('app_id')
+        except ValueError:
+            app_id=''
 
-            return Response(serializer.data)
-        elif appID == '0':
-            queryset = Auth.objects.filter(loginID__icontains=loginID)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(queryset, many=True)
-
-            return Response(serializer.data)
+        if login_id != '' and app_id != '':
+            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None))
+        elif login_id == '' and app_id != '':
+            queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None))
+        elif login_id != '' and app_id == '':
+            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None))
         else:
-            queryset = Auth.objects.filter(loginID__icontains=loginID,appID=appID)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(queryset, many=True)
+            queryset = Auth.objects.all()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-            return Response(serializer.data)
+
 
 class Create(APIView):
     # permission_classes = (UserPermission,)

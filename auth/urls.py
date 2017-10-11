@@ -37,6 +37,8 @@ router.register(r'user_group', UserGroupViewSet)
 router.register(r'user_group/details', GetUserGroupViewSet)
 
 router.register(r'user', ReadOnlyViewSet)
+# router.register(r'user/filtered/userlist', ReadOnlyViewSet)
+
 
 schema_view = get_swagger_view(title="Admin Auth Module")
 
