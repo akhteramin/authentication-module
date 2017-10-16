@@ -10,7 +10,7 @@ from rest_framework import routers
 from app.views import AppViewSet
 from email_domain.views import EmailViewSet
 from group.views import GroupViewSet, GetGroupViewSet
-from services.views import ServiceViewSet, GetServiceViewSet
+from services.views import ServiceViewSet, GetServiceViewSet,GetServiceUserViewSet
 from auth_jwt.views import ReadOnlyViewSet
 from acl.views import ACLViewSet, GetACLViewSet
 from user_group.views import UserGroupViewSet, GetUserGroupViewSet
@@ -32,6 +32,8 @@ router.register(r'group/filtered/app', GetGroupViewSet)
 
 router.register(r'service', ServiceViewSet)
 router.register(r'service/filtered/app', GetServiceViewSet)
+router.register(r'user_service', GetServiceUserViewSet)
+
 
 router.register(r'user_group', UserGroupViewSet)
 router.register(r'user_group/details', GetUserGroupViewSet)

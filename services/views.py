@@ -1,10 +1,16 @@
-from rest_framework import viewsets
+from rest_framework import viewsets,status
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 from auth.permissions import ServicePermission
 from .models import ServiceList
 from .serializers import ServiceSerializer
-
+from acl.serializers import GetACLSerializer
+from auth_jwt.serializers import ReadUserSerializer
+import jwt
+from auth.settings import SECRET_KEY, SUPERUSER
+from auth_jwt.models import Auth
+from user_group.models import UserGroup
+from acl.models import ACL
 import logging
 log = logging.getLogger(__name__)
 
@@ -42,6 +48,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
 class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
     # permission_classes = (ServicePermission,)
     queryset = ServiceList.objects.all()
@@ -59,3 +66,33 @@ class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
 
         return Response(serializer.data)
+
+
+class GetServiceUserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ACL.objects.all()
+    serializer_class = GetACLSerializer
+    # permission_classes = (HasToken,)
+
+    @list_route(url_path='')
+    def get(self, request, format=None):
+        try:
+            token = request.META['HTTP_TOKEN']
+            try:
+                if 'service_id' in request.query_params:
+                    print("user service is here::"+request.query_params.get('service_id'))
+                    service=ServiceList.objects.get(serviceID=request.query_params.get('service_id'))
+                    groups=ACL.objects.filter(service_id=service.id).values_list('group', flat=True)
+                    users=UserGroup.objects.filter(group__in=groups).values_list('user', flat=True)
+                    users = list(set(users))
+                    details = Auth.objects.filter(pk__in=users,is_active=True)
+                    serializer = ReadUserSerializer(details, many=True)
+                    return Response(serializer.data)
+            except Auth.DoesNotExist:
+                return Response(status=status.HTTP_412_PRECONDITION_FAILED)
+        except jwt.ExpiredSignatureError:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

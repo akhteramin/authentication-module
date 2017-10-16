@@ -36,6 +36,12 @@ class ReadOnlySerializer(serializers.ModelSerializer):
         fields = ('id', 'loginID', 'appID', 'deviceID', 'is_active', 'createdAT', 'updatedAT')
 
 
+class ReadUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Auth
+        fields = ( 'loginID', 'appID', 'deviceID', 'is_active', 'createdAT', 'updatedAT')
+
+
 class LoginSerializer(serializers.Serializer):
     loginID = serializers.CharField(min_length=5)
     password = serializers.CharField(min_length=8, write_only=True)
