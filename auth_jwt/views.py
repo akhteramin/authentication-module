@@ -11,12 +11,7 @@ from rest_framework.decorators import list_route
 from auth.permissions import HasToken, UserPermission, permission_check
 from auth.settings import SECRET_KEY, TOKEN_LIFE_TIME, REFRESH_TOKEN_WINDOW, SUPERUSER
 
-from acl.models import ACL
-from app.models import AppList
-from services.models import ServiceList
-from user_group.models import UserGroup
 from .models import Auth, Token
-from group.models import GroupList
 
 
 from .serializers import ReadOnlySerializer, BaseSerializer, LoginSerializer, TokenSerializer

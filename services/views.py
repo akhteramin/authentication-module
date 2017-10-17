@@ -12,6 +12,8 @@ from auth_jwt.models import Auth
 from user_group.models import UserGroup
 from acl.models import ACL
 import logging
+from auth.tasks import add
+
 log = logging.getLogger(__name__)
 
 
@@ -24,6 +26,12 @@ class ServiceViewSet(viewsets.ModelViewSet):
         service_id = ''
         app_id = ''
         # account_status= ''
+        print("add")
+        async_result = add.delay(4,3)
+        return_value = async_result.get()
+
+        print(return_value)
+
         try:
             service_id=request.query_params.get('service_id')
         except ValueError:
