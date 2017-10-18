@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'group',
     'services',
     'user_group',
+    'activity',
     'django_celery_beat',
     'django_celery_results',
 ]
@@ -245,6 +246,11 @@ LOGGING = {
         'user_group': {
             'handlers': ['console', 'development_logfile'],
             'level': 'DEBUG',
+        },
+        'activity':{
+            'handlers': ['console', 'development_logfile'],
+            'level': 'DEBUG',
+
         }
     }
 }

@@ -12,7 +12,7 @@ from auth_jwt.models import Auth
 from user_group.models import UserGroup
 from acl.models import ACL
 import logging
-from auth.tasks import add
+from auth.tasks import save_activity
 
 log = logging.getLogger(__name__)
 
@@ -26,35 +26,47 @@ class ServiceViewSet(viewsets.ModelViewSet):
         service_id = ''
         app_id = ''
         # account_status= ''
-        print("add")
-        async_result = add.delay(4,3)
-        return_value = async_result.get()
-
-        print(return_value)
 
         try:
-            service_id=request.query_params.get('service_id')
-        except ValueError:
-            service_id=''
-        try:
-            app_id=request.query_params.get('app_id')
-        except ValueError:
-            app_id=''
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+            # push into activity DB
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'SEARCH_SERVICE_LIST')
+            return_value = async_result.get()
 
-        if service_id != '' and app_id != '':
-            queryset = ServiceList.objects.filter(serviceID__icontains=request.query_params.get('service_id', None),appID=request.query_params.get('app_id', None))
-        elif service_id == '' and app_id != '':
-            queryset = ServiceList.objects.filter(appID=request.query_params.get('app_id', None))
-        elif service_id != '' and app_id == '':
-            queryset = ServiceList.objects.filter(serviceID__icontains=request.query_params.get('service_id', None))
-        else:
-            queryset = ServiceList.objects.all()
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+            print(return_value)
+
+            try:
+                service_id=request.query_params.get('service_id')
+            except ValueError:
+                service_id=''
+            try:
+                app_id=request.query_params.get('app_id')
+            except ValueError:
+                app_id=''
+
+            if service_id != '' and app_id != '':
+                queryset = ServiceList.objects.filter(serviceID__icontains=request.query_params.get('service_id', None),appID=request.query_params.get('app_id', None))
+            elif service_id == '' and app_id != '':
+                queryset = ServiceList.objects.filter(appID=request.query_params.get('app_id', None))
+            elif service_id != '' and app_id == '':
+                queryset = ServiceList.objects.filter(serviceID__icontains=request.query_params.get('service_id', None))
+            else:
+                queryset = ServiceList.objects.all()
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        except jwt.ExpiredSignatureError:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,14 +76,29 @@ class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
 
     @list_route(url_path='(?P<app_id>[0-9]+)')
     def service(self, request, pk=None, app_id=None):
-        queryset = ServiceList.objects.filter(appID=app_id)
-        serializer = ServiceSerializer(queryset, many=True)
+        try:
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+            # push into activity DB
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'GET_SERVICE_LIST_BY_APPID_'+app_id)
+            return_value = async_result.get()
+
+            print(return_value)
+            queryset = ServiceList.objects.filter(appID=app_id)
+            serializer = ServiceSerializer(queryset, many=True)
 
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
         #     return self.get_paginated_response(serializer.data)
         # serializer = self.get_serializer(queryset, many=True)
+        except jwt.ExpiredSignatureError:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
         return Response(serializer.data)
 
@@ -85,6 +112,11 @@ class GetServiceUserViewSet(viewsets.ReadOnlyModelViewSet):
     def get(self, request, format=None):
         try:
             token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+            # push into activity DB
+            async_result = save_activity.delay(payload['loginID'], payload['appID'],
+                                               'GET_USER_LIST_BY_SERVICE_' + request.query_params.get('service_id'))
+            return_value = async_result.get()
             try:
                 if 'service_id' in request.query_params:
                     print("user service is here::"+request.query_params.get('service_id'))
