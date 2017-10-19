@@ -34,42 +34,29 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         app_id = ''
         # account_status= ''
         try:
-            token = request.META['HTTP_TOKEN']
-            payload = jwt.decode(token, SECRET_KEY)
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'USER_SEARCH')
-            return_value = async_result.get()
+            login_id=request.query_params.get('login_id')
+        except ValueError:
+            login_id=''
+        try:
+            app_id=request.query_params.get('app_id')
+        except ValueError:
+            app_id=''
 
-            print(return_value)
-            try:
-                login_id=request.query_params.get('login_id')
-            except ValueError:
-                login_id=''
-            try:
-                app_id=request.query_params.get('app_id')
-            except ValueError:
-                app_id=''
+        if login_id != '' and app_id != '':
+            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None))
+        elif login_id == '' and app_id != '':
+            queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None))
+        elif login_id != '' and app_id == '':
+            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None))
+        else:
+            queryset = Auth.objects.all()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-            if login_id != '' and app_id != '':
-                queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None))
-            elif login_id == '' and app_id != '':
-                queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None))
-            elif login_id != '' and app_id == '':
-                queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None))
-            else:
-                queryset = Auth.objects.all()
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-
-        except jwt.ExpiredSignatureError:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -79,76 +66,62 @@ class Create(APIView):
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
         try:
-            token = request.META['HTTP_TOKEN']
-            payload = jwt.decode(token, SECRET_KEY)
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'USER_CREATION')
-            return_value = async_result.get()
+            if serializer.is_valid():
+                loginID = serializer.validated_data['loginID']
+                password = bytes(serializer.validated_data['password'], 'utf-8')
+                password = bcrypt_sha256.hash(password)
+                deviceID = serializer.validated_data['deviceID']
+                appID = serializer.validated_data['appID']
 
-            print(return_value)
-            try:
-                if serializer.is_valid():
-                    loginID = serializer.validated_data['loginID']
-                    password = bytes(serializer.validated_data['password'], 'utf-8')
-                    password = bcrypt_sha256.hash(password)
-                    deviceID = serializer.validated_data['deviceID']
-                    appID = serializer.validated_data['appID']
+                response = {}
 
-                    response = {}
+                if " " in loginID:
+                    response['loginID'] = ["no whitespace allowed in loginID"]
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-                    if " " in loginID:
-                        response['loginID'] = ["no whitespace allowed in loginID"]
-                        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                if " " in serializer.validated_data['password']:
+                    response['password'] = ["no whitespace allowed in password"]
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-                    if " " in serializer.validated_data['password']:
-                        response['password'] = ["no whitespace allowed in password"]
-                        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                serializer.validated_data['password'] = password
 
-                    serializer.validated_data['password'] = password
+                try:
+                    user = Auth.objects.get(loginID=loginID, appID=appID)
+                    response['loginID and appID'] = ['Combination of loginID and appID Already Exists!']
+                    return Response(response, status=status.HTTP_409_CONFLICT)
 
+                except Auth.DoesNotExist:
                     try:
-                        user = Auth.objects.get(loginID=loginID, appID=appID)
-                        response['loginID and appID'] = ['Combination of loginID and appID Already Exists!']
-                        return Response(response, status=status.HTTP_409_CONFLICT)
-
-                    except Auth.DoesNotExist:
-                        try:
-                            user = Auth.objects.create(loginID=loginID, password=password, appID_id=appID, deviceID=deviceID, is_active=True)
-                            user.save()
-                        except Exception as e:
-                            print(e)
-                            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-                        try:
-                            payload = {
-                                "loginID": loginID,
-                                "appID": serializer.validated_data['appID'],
-                                "deviceID": deviceID,
-                                "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
-                            }
-
-                            token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-                            token_t = Token.objects.create(user=user, token=token, deviceID=deviceID)
-                            token_t.save()
-                        except Exception as e:
-                            print(e)
-                            user.delete()
-                            return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
-
-                        # response['message'] = "User Created Successfully!"
-                        return Response(status=status.HTTP_201_CREATED)
-
+                        user = Auth.objects.create(loginID=loginID, password=password, appID_id=appID, deviceID=deviceID, is_active=True)
+                        user.save()
                     except Exception as e:
                         print(e)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    try:
+                        payload = {
+                            "loginID": loginID,
+                            "appID": serializer.validated_data['appID'],
+                            "deviceID": deviceID,
+                            "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
+                        }
 
-            except Exception as e:
-                print(e)
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+                        token_t = Token.objects.create(user=user, token=token, deviceID=deviceID)
+                        token_t.save()
+                    except Exception as e:
+                        print(e)
+                        user.delete()
+                        return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
 
-        except jwt.ExpiredSignatureError:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+                    # response['message'] = "User Created Successfully!"
+                    return Response(status=status.HTTP_201_CREATED)
+
+                except Exception as e:
+                    print(e)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             print(e)
@@ -219,10 +192,6 @@ class Logout(APIView):
             payload = jwt.decode(token, verify=False)
             user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
 
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'USER_LOGOUT')
-            return_value = async_result.get()
-            print(return_value)
-
             token_t = Token.objects.get(user=user, deviceID=payload['deviceID'])
             token_t.token = None
             token_t.save()
@@ -250,10 +219,6 @@ class Verify(APIView):
             try:
                 user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
                 token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
-
-                async_result = save_activity.delay(payload['loginID'], payload['appID'], 'VERIFY_TOKEN')
-                return_value = async_result.get()
-                print(return_value)
 
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -302,10 +267,6 @@ class Refresh(APIView):
             try:
                 user = Auth.objects.get(loginID=payload['loginID'], appID=payload["appID"], is_active=True)
                 token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
-
-                async_result = save_activity.delay(payload['loginID'], payload['appID'], 'REFRESH_TOKEN')
-                return_value = async_result.get()
-                print(return_value)
 
                 if window < REFRESH_TOKEN_WINDOW:
                     new_payload = {
@@ -360,10 +321,6 @@ class ChangePassword(APIView):
                 if payload['loginID'] == loginID:
                     user = Auth.objects.get(loginID=loginID, appID=appID, is_active=True)
                     token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
-
-                    async_result = save_activity.delay(payload['loginID'], payload['appID'], 'CHANGE_PASSWORD')
-                    return_value = async_result.get()
-                    print(return_value)
 
                     if bcrypt_sha256.verify(old_password, user.password):
                         user.password = bcrypt_sha256.hash(new_password)
@@ -426,10 +383,6 @@ class SetPassword(APIView):
                 user.password = new_password
                 user.save()
 
-                async_result = save_activity.delay(payload['loginID'], payload['appID'], 'SET_PASSWORD_FOR_LOGINID_'+loginID)
-                return_value = async_result.get()
-                print(return_value)
-
                 token_t = Token.objects.filter(user=user).update(token=None)
 
                 return Response(status=status.HTTP_204_NO_CONTENT)
@@ -462,11 +415,6 @@ class DeactiveAccount(APIView):
                 user.is_active = False
                 user.save()
 
-                async_result = save_activity.delay(payload['loginID'], payload['appID'],
-                                                   'DEACTIVATE_LOGINID_' + loginID)
-                return_value = async_result.get()
-                print(return_value)
-
                 token_t = Token.objects.filter(user=user).update(token=None)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Auth.DoesNotExist:
@@ -497,10 +445,7 @@ class ReactiveAccount(APIView):
                 user = Auth.objects.get(loginID=loginID, appID=appID, is_active=False)
                 user.is_active = True
                 user.save()
-                async_result = save_activity.delay(payload['loginID'], payload['appID'],
-                                                   'ACTIVATE_LOGINID_' + loginID)
-                return_value = async_result.get()
-                print(return_value)
+
                 token_t = Token.objects.filter(user=user).update(token=None)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Auth.DoesNotExist:

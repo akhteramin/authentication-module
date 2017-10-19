@@ -26,12 +26,7 @@ class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='service/(?P<service_id>[0-9]+)')
     def service(self, request, pk=None, service_id=None):
         try:
-            token = request.META['HTTP_TOKEN']
-            payload = jwt.decode(token, SECRET_KEY)
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'GET_ACL_BY_SERVICE_ID')
-            return_value = async_result.get()
 
-            print(return_value)
             queryset = ACL.objects.filter(service=service_id)
             serializer = GetGroupSerializer(queryset, many=True)
             return Response(serializer.data)
@@ -45,12 +40,7 @@ class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='group/(?P<group_id>[0-9]+)')
     def group(self, request, pk=None, group_id=None):
         try:
-            token = request.META['HTTP_TOKEN']
-            payload = jwt.decode(token, SECRET_KEY)
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'GET_ACL_BY_GROUP_ID')
-            return_value = async_result.get()
 
-            print(return_value)
             queryset = ACL.objects.filter(group=group_id)
             serializer = GetServiceSerializer(queryset, many=True)
             return Response(serializer.data)
@@ -76,10 +66,7 @@ class PermissionsList(APIView):
         try:
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'GET_PERMISSION_LIST')
-            return_value = async_result.get()
 
-            print(return_value)
             try:
                 if payload['loginID'] not in SUPERUSER:
                     user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)

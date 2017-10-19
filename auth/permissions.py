@@ -5,7 +5,9 @@ from auth_jwt.models import Auth, Token
 from user_group.models import UserGroup
 from acl.models import ACL
 from services.models import ServiceList
+from auth.tasks import save_activity
 
+import json
 
 def token_validation_and_get_user(request):
     response = {}
@@ -55,6 +57,12 @@ def user_group_check(uid, gid):
 
 def permission_check(request, sid=None):
     response = {}
+    print(request.method)
+    print(request.get_full_path())
+
+    if request.body:
+        print(json.loads(request.body.decode('utf-8')))
+
     try:
         if sid is not None:
             service_id = sid
@@ -67,6 +75,13 @@ def permission_check(request, sid=None):
         result = token_validation_and_get_user(request)
 
         if result['status_code'] == 200:
+
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], service_id)
+            return_value = async_result.get()
+            print(return_value)
+
             user = result['user']
             if user.loginID in SUPERUSER:
                 response['status_code'] = 202
@@ -84,6 +99,7 @@ def permission_check(request, sid=None):
                 break
             else:
                 continue
+
 
         return response
     except Exception as e:

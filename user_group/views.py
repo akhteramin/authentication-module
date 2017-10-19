@@ -21,13 +21,6 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='user/(?P<user_id>[0-9]+)')
     def user(self, request, pk=None, user_id=None):
         try:
-            token = request.META['HTTP_TOKEN']
-            payload = jwt.decode(token, SECRET_KEY)
-            # push into activity DB
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'SEARCH_SERVICE_LIST')
-            return_value = async_result.get()
-            print(return_value)
-
             queryset = UserGroup.objects.filter(user=user_id)
             serializer = GetGroupSerializer(queryset, many=True)
             return Response(serializer.data)
@@ -43,13 +36,6 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='group/(?P<group_id>[0-9]+)')
     def group(self, request, pk=None, group_id=None):
         try:
-            token = request.META['HTTP_TOKEN']
-            payload = jwt.decode(token, SECRET_KEY)
-            # push into activity DB
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'SEARCH_SERVICE_LIST')
-            return_value = async_result.get()
-            print(return_value)
-
             queryset = UserGroup.objects.filter(group=group_id)
             serializer = GetUserSerializer(queryset, many=True)
             return Response(serializer.data)
