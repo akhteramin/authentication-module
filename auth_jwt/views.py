@@ -61,7 +61,7 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class Create(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (UserCreationPermission,)
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
@@ -133,6 +133,8 @@ class Login(APIView):
         try:
             serializer = LoginSerializer(data=request.data)
 
+            print(request.data)
+
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
                 password = bytes(serializer.validated_data['password'], 'utf-8')
@@ -150,7 +152,7 @@ class Login(APIView):
                             "deviceID": deviceID,
                             "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
                         }
-                        async_result = save_activity.delay(loginID, appID, 'USER_LOGIN')
+                        async_result = save_activity.delay(loginID, appID, 'AUTH_LOGIN_USER')
                         return_value = async_result.get()
                         print(return_value)
 
@@ -191,6 +193,10 @@ class Logout(APIView):
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, verify=False)
             user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
+
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_LOGOUT_USER')
+            return_value = async_result.get()
+            print(return_value)
 
             token_t = Token.objects.get(user=user, deviceID=payload['deviceID'])
             token_t.token = None
@@ -361,7 +367,7 @@ class ChangePassword(APIView):
 
 
 class SetPassword(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (SetPasswordPermission,)
 
     def put(self, request, format=None):
         try:
@@ -395,7 +401,7 @@ class SetPassword(APIView):
 
 
 class DeactiveAccount(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (AccountActivatePermission,)
 
     def put(self, request, format=None):
         try:
@@ -426,7 +432,7 @@ class DeactiveAccount(APIView):
 
 
 class ReactiveAccount(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (AccountDeactivatePermission,)
 
     def put(self, request, format=None):
         try:

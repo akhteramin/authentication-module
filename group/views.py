@@ -19,6 +19,8 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     @list_route(url_path='')
     def get(self, request):
+        # permission_classes = (SearchGroupPermission,)
+
         group_id = ''
         app_id = ''
         # account_status= ''
@@ -48,7 +50,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 
 class GetGroupViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (GroupPermission,)
+    # permission_classes = (GroupFilterPermission,)
     queryset = GroupList.objects.all()
     serializer_class = GroupSerializer
 

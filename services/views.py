@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
-    permission_classes = (ServicePermission,)
+    # permission_classes = (ServicePermission,)
 
     queryset = ServiceList.objects.all()
     serializer_class = ServiceSerializer
@@ -54,7 +54,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = (ServicePermission,)
+    # permission_classes = (ServicePermission,)
 
     queryset = ServiceList.objects.all()
     serializer_class = ServiceSerializer
@@ -74,18 +74,15 @@ class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
-
 class GetServiceUserViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = (ServicePermission,)
+    # permission_classes = (UserServicePermission,)
 
     queryset = ACL.objects.all()
     serializer_class = GetACLSerializer
 
     @list_route(url_path='')
     def get(self, request, format=None):
-
+        # permission_classes = (SearchUserServicePermission,)
         try:
             if 'service_id' in request.query_params:
                 print("user service is here::"+request.query_params.get('service_id'))

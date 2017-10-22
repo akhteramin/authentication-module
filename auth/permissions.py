@@ -57,11 +57,6 @@ def user_group_check(uid, gid):
 
 def permission_check(request, sid=None):
     response = {}
-    print(request.method)
-    print(request.get_full_path())
-
-    if request.body:
-        print(json.loads(request.body.decode('utf-8')))
 
     try:
         if sid is not None:
@@ -119,10 +114,23 @@ class HasToken(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_APP__ALL
+# ServiceID - App permission
 class AppPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_APP_ALL")
+
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_APPLICATION_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_APPLICATION_BY_ID")
+        elif request.method =='POST':
+            result = permission_check(request, "AUTH_ADD_APPLICATION")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_APPLICATION")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_APPLICATION")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_APPLICATION")
 
         if result['status_code'] == 202:
             return True
@@ -130,10 +138,22 @@ class AppPermission(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_EMAIL__ALL
+# ServiceID - EMAIL permission
 class EmailPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_EMAIL_ALL")
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_EMAIL_DOMAIN_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_EMAIL_DOMAIN_BY_ID")
+        elif request.method =='POST':
+            result = permission_check(request, "AUTH_ADD_EMAIL_DOMAIN")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_EMAIL_DOMAIN")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_EMAIL_DOMAIN")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_EMAIL_DOMAIN")
 
         if result['status_code'] == 202:
             return True
@@ -141,10 +161,14 @@ class EmailPermission(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_USER__ALL
+# User - User list permission
 class UserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_USER_ALL")
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_USER_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_USER_BY_ID")
 
         if result['status_code'] == 202:
             return True
@@ -152,10 +176,82 @@ class UserPermission(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_GROUP_ALL
+# User - Search User list permission
+class SearchUserPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+            result = permission_check(request, "AUTH_SEARCH_USER")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# User - Create User permission
+class UserCreationPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method=='POST':
+                result = permission_check(request, "AUTH_CREATE_USER")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Account - Create Account activate
+class AccountActivatePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'PUT':
+            result = permission_check(request, "AUTH_ACTIVATE_USER")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Account - Create Account deactivate
+class AccountDeactivatePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'PUT':
+            result = permission_check(request, "AUTH_DEACTIVATE_USER")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Account - Set Password
+class SetPasswordPermission():
+    def has_permission(self, request, view):
+        if request.method == 'PUT':
+            result = permission_check(request, "AUTH_SET_PASSWORD")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Group - Basic Group Permission
 class GroupPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_GROUP_ALL")
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_GROUP_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_GROUP_BY_ID")
+        elif request.method =='POST':
+            result = permission_check(request, "AUTH_ADD_GROUP")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_GROUP")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_GROUP")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_GROUP")
 
         if result['status_code'] == 202:
             return True
@@ -163,10 +259,51 @@ class GroupPermission(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_SERVICE_ALL
+# Group - Search Group Permission
+class SearchGroupPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+            result = permission_check(request, "AUTH_SEARCH_GROUP")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Group - Filter Group Permission
+class GroupFilterPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_GROUP_FILTER_BY_APP_ID")
+            else:
+                result = permission_check(request, "AUTH_GET_GROUP_FILTER_BY_APP_ID")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Service - Basic Service Permission
 class ServicePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_SERVICE_ALL")
+
+        # result = permission_check(request, "AUTH_SERVICE_ALL")
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_SERVICE_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_SERVICE_BY_ID")
+        elif request.method =='POST':
+            result = permission_check(request, "AUTH_ADD_SERVICE")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_SERVICE")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_SERVICE")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_SERVICE")
 
         if result['status_code'] == 202:
             return True
@@ -174,10 +311,51 @@ class ServicePermission(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_USER_GROUP_ALL
+# Service - Search Service Permission
+class SearchServicePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+            result = permission_check(request, "AUTH_SEARCH_SERVICE")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Service - Filter Service Permission
+class ServiceFilterPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_SERVICE_FILTER_BY_APP_ID")
+            else:
+                result = permission_check(request, "AUTH_GET_SERVICE_FILTER_BY_APP_ID")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# UserGroup - Basic User Group Permission
 class UserGroupPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_USER_GROUP_ALL")
+        # result = permission_check(request, "AUTH_USER_GROUP_ALL")
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_USER_GROUP_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_USER_GROUP_BY_ID")
+        elif request.method =='POST':
+            result = permission_check(request, "AUTH_ASSIGN_USER_GROUP")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_USER_GROUP")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_USER_GROUP")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_USER_GROUP")
+
 
         if result['status_code'] == 202:
             return True
@@ -185,10 +363,155 @@ class UserGroupPermission(permissions.BasePermission):
             return False
 
 
-# ServiceID - AUTH_ACL
+# UserGroup - UserGroup by Group Permission
+class UserGroupDetailsByGroupPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # result = permission_check(request, "AUTH_USER_GROUP_ALL")
+        if request.method == 'GET':
+                result = permission_check(request, "AUTH_GET_USER_GROUP_BY_GROUP")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# UserGroup - UserGroup by User Permission
+class UserGroupDetailsByUserPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # result = permission_check(request, "AUTH_USER_GROUP_ALL")
+        if request.method == 'GET':
+                result = permission_check(request, "AUTH_GET_USER_GROUP_BY_USER")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# ACL - ACL permission
 class ACLPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        result = permission_check(request, "AUTH_ACL")
+        # result = permission_check(request, "AUTH_ACL")
+        if request.method == 'GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_ACL_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_ACL_BY_ID")
+        elif request.method == 'POST':
+            result = permission_check(request, "AUTH_ASSIGN_GROUP_SERVICE")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_ACL")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_ACL")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_ACL")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# ACL - ACL Details permission
+class ACLDetailsPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # result = permission_check(request, "AUTH_ACL")
+        if request.method == 'GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_ACL_DETAILS_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_ACL_DETAILS_BY_ID")
+
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# ACL - ACL Details by Group permission
+class ACLDetailsByGroupPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+
+        if request.method == 'GET':
+                result = permission_check(request, "AUTH_GET_ACL_DETAILS_BY_GROUP")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# ACL - ACL Details by Service permission
+class ACLDetailsByServicePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+                result = permission_check(request, "AUTH_GET_ACL_DETAILS_BY_SERVICE")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Activity - Basic Activity Permission
+class ActivityPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method=='GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_ACTIVITY_LIST")
+            else:
+                result = permission_check(request, "AUTH_GET_ACTIVITY_BY_ID")
+        elif request.method =='POST':
+            result = permission_check(request, "AUTH_ADD_ACTIVITY")
+        elif request.method == 'DELETE':
+            result = permission_check(request, "AUTH_DELETE_ACTIVITY")
+        elif request.method == 'PATCH':
+            result = permission_check(request, "AUTH_REPLACE_ACTIVITY")
+        elif request.method == 'PUT':
+            result = permission_check(request, "AUTH_UPDATE_ACTIVITY")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# Activity - Search Activity Permission
+class SearchActivityPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method=='GET':
+            result = permission_check(request, "AUTH_SEARCH_ACTIVITY")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# User Service - Basic User Service Permission
+class UserServicePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # result = permission_check(request, "AUTH_ACL")
+        if request.method == 'GET':
+            if 'limit' in request.GET:
+                result = permission_check(request, "AUTH_GET_USER_SERVICE")
+            else:
+                result = permission_check(request, "AUTH_GET_USER_SERVICE_BY_ID")
+
+        if result['status_code'] == 202:
+            return True
+        else:
+            return False
+
+
+# User Service - Search User Service Permission
+class SearchUserServicePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # result = permission_check(request, "AUTH_ACL")
+        if request.method == 'GET':
+            result = permission_check(request, "AUTH_SEARCH_USER_SERVICE")
 
         if result['status_code'] == 202:
             return True

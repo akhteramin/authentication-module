@@ -8,6 +8,6 @@ log = logging.getLogger(__name__)
 
 
 class EmailViewSet(viewsets.ModelViewSet):
-    # permission_classes = (EmailPermission,)
+    permission_classes = (EmailPermission,)
     queryset = EmailDomain.objects.all()
     serializer_class = EmailDomainSerializer

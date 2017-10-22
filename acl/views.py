@@ -19,12 +19,14 @@ log = logging.getLogger(__name__)
 
 
 class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (ACLPermission,)
+    # permission_classes = (ACLDetailsPermission,)
     queryset = ACL.objects.all()
     serializer_class = GetACLSerializer
 
     @list_route(url_path='service/(?P<service_id>[0-9]+)')
     def service(self, request, pk=None, service_id=None):
+        # permission_classes = (ACLDetailsByServicePermission,)
+
         try:
 
             queryset = ACL.objects.filter(service=service_id)
@@ -39,6 +41,8 @@ class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
 
     @list_route(url_path='group/(?P<group_id>[0-9]+)')
     def group(self, request, pk=None, group_id=None):
+        # permission_classes = (ACLDetailsByGroupPermission,)
+
         try:
 
             queryset = ACL.objects.filter(group=group_id)
@@ -78,6 +82,11 @@ class PermissionsList(APIView):
                     details = ServiceList.objects.all()
 
                 serializer = ServiceSerializer(details, many=True)
+
+                async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_GET_PERMISSION_LIST')
+                return_value = async_result.get()
+                print(return_value)
+
                 return Response(serializer.data)
             except Auth.DoesNotExist:
                 return Response(status=status.HTTP_412_PRECONDITION_FAILED)

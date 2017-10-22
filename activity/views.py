@@ -15,13 +15,14 @@ log = logging.getLogger(__name__)
 
 
 class ActivityViewSet(viewsets.ModelViewSet):
-    # permission_classes = (GroupPermission,)
+    # permission_classes = (ActivityPermission,)
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
 
 
     @list_route(url_path='')
     def get(self, request):
+        # permission_classes = (SearchActivityPermission,)
         login_id = ''
         app_id = ''
         service=''
