@@ -14,7 +14,7 @@ from services.views import ServiceViewSet, GetServiceViewSet,GetServiceUserViewS
 from auth_jwt.views import ReadOnlyViewSet
 from acl.views import ACLViewSet, GetACLViewSet
 from user_group.views import UserGroupViewSet, GetUserGroupViewSet
-
+from activity.views import ActivityViewSet
 
 if settings.DEBUG:
     router = routers.DefaultRouter()
@@ -34,6 +34,7 @@ router.register(r'service', ServiceViewSet)
 router.register(r'service/filtered/app', GetServiceViewSet)
 router.register(r'user_service', GetServiceUserViewSet)
 
+router.register(r'activity', ActivityViewSet)
 
 router.register(r'user_group', UserGroupViewSet)
 router.register(r'user_group/details', GetUserGroupViewSet)

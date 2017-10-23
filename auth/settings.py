@@ -15,6 +15,18 @@ TOKEN_LIFE_TIME = int(config.get('SECURITY', 'TOKEN_LIFE_TIME_HOUR')) * 60 * 60
 REFRESH_TOKEN_WINDOW = int(config.get('SECURITY', 'REFRESH_TOKEN_WINDOW_SEC'))
 
 
+# CELERY SETTINGS
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IMPORTS = (
+    'auth.tasks'
+)
+# CELERY_TIMEZONE = TIME_ZONE
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -33,6 +45,9 @@ INSTALLED_APPS = [
     'group',
     'services',
     'user_group',
+    'activity',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 if DEBUG:
@@ -231,6 +246,11 @@ LOGGING = {
         'user_group': {
             'handlers': ['console', 'development_logfile'],
             'level': 'DEBUG',
+        },
+        'activity':{
+            'handlers': ['console', 'development_logfile'],
+            'level': 'DEBUG',
+
         }
     }
 }

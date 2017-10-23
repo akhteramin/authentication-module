@@ -11,16 +11,13 @@ from rest_framework.decorators import list_route
 from auth.permissions import HasToken, UserPermission, permission_check
 from auth.settings import SECRET_KEY, TOKEN_LIFE_TIME, REFRESH_TOKEN_WINDOW, SUPERUSER
 
-from acl.models import ACL
-from app.models import AppList
-from services.models import ServiceList
-from user_group.models import UserGroup
 from .models import Auth, Token
-from group.models import GroupList
 
 
 from .serializers import ReadOnlySerializer, BaseSerializer, LoginSerializer, TokenSerializer
 from .serializers import DeactiveSerializer, ChangePasswordSerializer, SetPasswordSerializer
+
+from auth.tasks import save_activity
 
 import logging
 log = logging.getLogger(__name__)
@@ -62,12 +59,12 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 
+
 class Create(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (UserCreationPermission,)
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
-
         try:
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
@@ -136,6 +133,8 @@ class Login(APIView):
         try:
             serializer = LoginSerializer(data=request.data)
 
+            print(request.data)
+
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
                 password = bytes(serializer.validated_data['password'], 'utf-8')
@@ -153,6 +152,9 @@ class Login(APIView):
                             "deviceID": deviceID,
                             "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
                         }
+                        async_result = save_activity.delay(loginID, appID, 'AUTH_LOGIN_USER','')
+                        return_value = async_result.get()
+                        print(return_value)
 
                         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
@@ -191,6 +193,11 @@ class Logout(APIView):
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, verify=False)
             user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
+
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_LOGOUT_USER', '')
+            return_value = async_result.get()
+            print(return_value)
+
             token_t = Token.objects.get(user=user, deviceID=payload['deviceID'])
             token_t.token = None
             token_t.save()
@@ -218,6 +225,7 @@ class Verify(APIView):
             try:
                 user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
                 token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
+
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
             except Auth.DoesNotExist:
@@ -359,10 +367,13 @@ class ChangePassword(APIView):
 
 
 class SetPassword(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (SetPasswordPermission,)
 
     def put(self, request, format=None):
         try:
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+
             serializer = SetPasswordSerializer(data=request.data)
 
             if serializer.is_valid():
@@ -377,7 +388,9 @@ class SetPassword(APIView):
                 user = Auth.objects.get(loginID=loginID, appID=appID, is_active=True)
                 user.password = new_password
                 user.save()
+
                 token_t = Token.objects.filter(user=user).update(token=None)
+
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Auth.DoesNotExist:
                 return Response(status=status.HTTP_412_PRECONDITION_FAILED)
@@ -388,10 +401,13 @@ class SetPassword(APIView):
 
 
 class DeactiveAccount(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (AccountActivatePermission,)
 
     def put(self, request, format=None):
         try:
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+
             serializer = DeactiveSerializer(data=request.data)
 
             if serializer.is_valid():
@@ -404,6 +420,7 @@ class DeactiveAccount(APIView):
                 user = Auth.objects.get(loginID=loginID, appID=appID, is_active=True)
                 user.is_active = False
                 user.save()
+
                 token_t = Token.objects.filter(user=user).update(token=None)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Auth.DoesNotExist:
@@ -415,10 +432,13 @@ class DeactiveAccount(APIView):
 
 
 class ReactiveAccount(APIView):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (AccountDeactivatePermission,)
 
     def put(self, request, format=None):
         try:
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+
             serializer = DeactiveSerializer(data=request.data)
 
             if serializer.is_valid():
@@ -431,6 +451,7 @@ class ReactiveAccount(APIView):
                 user = Auth.objects.get(loginID=loginID, appID=appID, is_active=False)
                 user.is_active = True
                 user.save()
+
                 token_t = Token.objects.filter(user=user).update(token=None)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Auth.DoesNotExist:

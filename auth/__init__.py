@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import os
 from .settings import BASE_DIR
+from .celery import app as celery_app
 
 directory = BASE_DIR + '/logs'
 try:
