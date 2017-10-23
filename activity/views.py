@@ -5,10 +5,6 @@ from auth.permissions import GroupPermission
 from .models import Activity
 from .serializers import ActivitySerializer
 
-from auth.settings import SECRET_KEY, SUPERUSER
-import jwt
-from auth.tasks import save_activity
-
 
 import logging
 log = logging.getLogger(__name__)

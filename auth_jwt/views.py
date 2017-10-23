@@ -152,7 +152,7 @@ class Login(APIView):
                             "deviceID": deviceID,
                             "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
                         }
-                        async_result = save_activity.delay(loginID, appID, 'AUTH_LOGIN_USER')
+                        async_result = save_activity.delay(loginID, appID, 'AUTH_LOGIN_USER','')
                         return_value = async_result.get()
                         print(return_value)
 
@@ -194,7 +194,7 @@ class Logout(APIView):
             payload = jwt.decode(token, verify=False)
             user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
 
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_LOGOUT_USER')
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_LOGOUT_USER', '')
             return_value = async_result.get()
             print(return_value)
 

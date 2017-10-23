@@ -57,7 +57,7 @@ def user_group_check(uid, gid):
 
 def permission_check(request, sid=None):
     response = {}
-
+    dataset=''
     try:
         if sid is not None:
             service_id = sid
@@ -73,7 +73,12 @@ def permission_check(request, sid=None):
 
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
-            async_result = save_activity.delay(payload['loginID'], payload['appID'], service_id)
+            if request.method == 'POST' or request.method == 'PATCH' or request.method == 'PUT':
+                body_unicode = request.body.decode('utf-8')
+                body = json.loads(body_unicode)
+                dataset = body['content']
+
+            async_result = save_activity.delay(payload['loginID'], payload['appID'], service_id,dataset)
             return_value = async_result.get()
             print(return_value)
 

@@ -8,4 +8,4 @@ class ActivitySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Activity
-        fields = ('id', 'user', 'app', 'service', 'createdAT')
+        fields = ('id', 'user', 'app', 'service', 'data', 'createdAT')
