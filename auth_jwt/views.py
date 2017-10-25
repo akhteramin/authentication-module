@@ -61,7 +61,8 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class Create(APIView):
-    # permission_classes = (UserCreationPermission,)
+    # Since user will be created by other application
+    # permission_classes = (HasToken,)
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
