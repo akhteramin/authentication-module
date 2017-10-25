@@ -66,6 +66,7 @@ class Create(APIView):
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
+        response = {}
         try:
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
@@ -74,7 +75,6 @@ class Create(APIView):
                 deviceID = serializer.validated_data['deviceID']
                 appID = serializer.validated_data['appID']
 
-                response = {}
 
                 if " " in loginID:
                     response['loginID'] = ["no whitespace allowed in loginID"]
@@ -89,6 +89,8 @@ class Create(APIView):
                 try:
                     user = Auth.objects.get(loginID=loginID, appID=appID)
                     response['loginID and appID'] = ['Combination of loginID and appID Already Exists!']
+                    print("login id and appid existence")
+                    print(response)
                     return Response(response, status=status.HTTP_409_CONFLICT)
 
                 except Auth.DoesNotExist:
@@ -122,11 +124,15 @@ class Create(APIView):
                     print(e)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if serializer.errors['non_field_errors']:
+                response['loginID and appID'] = ['Combination of loginID and appID Already Exists!']
+                return Response(response, status=status.HTTP_409_CONFLICT)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(e,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class Login(APIView):
