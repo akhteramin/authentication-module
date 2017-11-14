@@ -84,8 +84,8 @@ class PermissionsList(APIView):
                 serializer = ServiceSerializer(details, many=True)
 
                 async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_GET_PERMISSION_LIST', payload)
-                return_value = async_result.get()
-                print(return_value)
+                # return_value = async_result.get()
+                # print(return_value)
 
                 return Response(serializer.data)
             except Auth.DoesNotExist:
