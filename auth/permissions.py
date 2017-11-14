@@ -68,7 +68,7 @@ def permission_check(request, sid=None):
             return response
 
         result = token_validation_and_get_user(request)
-
+        print(result)
         if result['status_code'] == 200:
 
             token = request.META['HTTP_TOKEN']
