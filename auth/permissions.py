@@ -79,8 +79,8 @@ def permission_check(request, sid=None):
                 dataset = body['content']
 
             async_result = save_activity.delay(payload['loginID'], payload['appID'], service_id,dataset)
-            return_value = async_result.get()
-            print(return_value)
+            # return_value = async_result.get()
+            # print(return_value)
 
             user = result['user']
             if user.loginID in SUPERUSER:
