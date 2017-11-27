@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from .views import Create, Login, Logout, Verify, Refresh, CheckPermission
+from .views import Create, Login, Logout, Verify, Refresh, CheckPermission, VerifyAllApp
 from .views import ChangePassword, SetPassword, DeactiveAccount, ReactiveAccount
 
 urlpatterns = [
@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^token/verify/', Verify.as_view()),
     url(r'^token/validation/', CheckPermission.as_view()),
     url(r'^token/refresh/', Refresh.as_view()),
+    url(r'^token/renew/', VerifyAllApp.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -199,15 +199,16 @@ class Logout(APIView):
         try:
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, verify=False)
-            user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
+            user = Auth.objects.filter(loginID=payload['loginID'], is_active=True)
 
             async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_LOGOUT_USER', '')
             # return_value = async_result.get()
             # print(return_value)
 
-            token_t = Token.objects.get(user=user, deviceID=payload['deviceID'])
-            token_t.token = None
-            token_t.save()
+            token_t = Token.objects.filter(user__in=user, deviceID=payload['deviceID']).update(token=None)
+
+            # token_t.token = None
+            # token_t.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         except Auth.DoesNotExist:
@@ -228,6 +229,7 @@ class Verify(APIView):
         try:
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
+            print("login iD::", payload['loginID'])
 
             try:
                 user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
@@ -248,6 +250,58 @@ class Verify(APIView):
             print(e)
             return Response(status=status.HTTP_417_EXPECTATION_FAILED)
 
+
+class VerifyAllApp(APIView):
+    # permission_classes = (HasToken,)
+    def get(self, request, format=None):
+        try:
+            token = request.META['HTTP_TOKEN']
+            payload = jwt.decode(token, SECRET_KEY)
+            print("login iD::", payload['loginID'])
+            app_id = request.query_params.get('appID')
+            device_id = request.query_params.get('deviceID')
+            response = {}
+
+            try:
+                if Auth.objects.get(loginID=payload['loginID'], appID=app_id, is_active=True):
+                    user = Auth.objects.get(loginID=payload['loginID'], appID=app_id, is_active=True)
+                    payload = {
+                        "loginID": payload['loginID'],
+                        "appID": app_id,
+                        "deviceID": device_id,
+                        "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
+                    }
+                    async_result = save_activity.delay(payload['loginID'], app_id, 'AUTH_LOGIN_USER', '')
+                    # return_value = async_result.get()
+                    # print(return_value)
+
+                    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+                    try:
+                        token_t = Token.objects.get(user=user, deviceID=device_id)
+                        token_t.token = token
+                        token_t.save()
+                    except Token.DoesNotExist:
+                        token_t = Token.objects.create(user=user, token=token, deviceID=device_id)
+                        token_t.save()
+
+                    response['token'] = token
+                    return Response(response)
+                else:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            except Auth.DoesNotExist:
+                return Response(status=status.HTTP_412_PRECONDITION_FAILED)
+
+            except Token.DoesNotExist:
+                return Response(status=status.HTTP_412_PRECONDITION_FAILED)
+
+        except jwt.ExpiredSignatureError:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
 
 class CheckPermission(APIView):
     def get(self, request, format=None):
