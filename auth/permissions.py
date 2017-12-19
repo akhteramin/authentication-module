@@ -14,7 +14,7 @@ def token_validation_and_get_user(request):
     try:
         if request.META.get('HTTP_TOKEN') is not None:
             token = request.META['HTTP_TOKEN']
-
+            print("token in permissions::"+token)
             try:
                 payload = jwt.decode(token, SECRET_KEY)
                 try:
