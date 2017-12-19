@@ -43,11 +43,11 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             app_id=''
 
         if login_id != '' and app_id != '':
-            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None))
+            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=True)
         elif login_id == '' and app_id != '':
-            queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None))
+            queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None), is_active=True)
         elif login_id != '' and app_id == '':
-            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None))
+            queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None), is_active=True)
         else:
             queryset = Auth.objects.all()
         page = self.paginate_queryset(queryset)
@@ -446,9 +446,9 @@ class SetPassword(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                user = Auth.objects.get(loginID=loginID, appID=appID, is_active=True)
-                user.password = new_password
-                user.save()
+                user = Auth.objects.filter(loginID=loginID, is_active=True).update(password=new_password)
+                # user.password = new_password
+                # user.save()
 
                 token_t = Token.objects.filter(user=user).update(token=None)
 
