@@ -171,6 +171,7 @@ class Login(APIView):
                             token_t.save()
                         except Token.DoesNotExist:
                             token_t = Token.objects.create(user=user, token=token, deviceID=deviceID)
+                            print(token_t)
                             token_t.save()
 
                         response['token'] = token
