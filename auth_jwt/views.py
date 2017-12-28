@@ -469,7 +469,7 @@ class DeactiveAccount(APIView):
         try:
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
-
+            print("token is here::",token)
             serializer = DeactiveSerializer(data=request.data)
 
             if serializer.is_valid():
