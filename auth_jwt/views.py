@@ -231,7 +231,7 @@ class Verify(APIView):
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
             print("login iD::", payload['loginID'])
-
+            print("token::", token)
             try:
                 user = Auth.objects.get(loginID=payload['loginID'], appID=payload['appID'], is_active=True)
                 token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
