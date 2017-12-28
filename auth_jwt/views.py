@@ -470,11 +470,14 @@ class DeactiveAccount(APIView):
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
             print("token is here::",token)
+
             serializer = DeactiveSerializer(data=request.data)
 
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
                 appID = serializer.validated_data['appID']
+                print(loginID)
+                print(appID)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
