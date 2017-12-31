@@ -43,7 +43,7 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             app_id=''
 
         if login_id != '' and app_id != '':
-            queryset = Auth.objects.filter(loginID__icontains=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=True)
+            queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=True)
         elif login_id == '' and app_id != '':
             queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None), is_active=True)
         elif login_id != '' and app_id == '':
@@ -56,8 +56,7 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-
+        
 
 
 class Create(APIView):
