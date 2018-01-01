@@ -29,6 +29,24 @@ class BaseSerializer(serializers.ModelSerializer):
         model = Auth
         fields = ('id', 'loginID', 'password', 'appID', 'deviceID', 'is_active')
 
+class UpdateBaseSerializer(serializers.ModelSerializer):
+    loginID = serializers.EmailField(min_length=12)
+    appID = serializers.IntegerField()
+
+    def validate_loginID(self, email):
+        domain = email.split("@")[-1]
+        try:
+            email_domain = EmailDomain.objects.get(domain=domain)
+            return email
+        except Exception as e:
+            print(e)
+            raise serializers.ValidationError("Invalid Email Domain!")
+
+
+    class Meta:
+        model = Auth
+        fields = ('id', 'loginID', 'appID', 'deviceID', 'is_active')
+
 
 class ReadOnlySerializer(serializers.ModelSerializer):
     class Meta:

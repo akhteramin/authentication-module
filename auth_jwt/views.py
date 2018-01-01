@@ -14,7 +14,7 @@ from auth.settings import SECRET_KEY, TOKEN_LIFE_TIME, REFRESH_TOKEN_WINDOW, SUP
 from .models import Auth, Token
 
 
-from .serializers import ReadOnlySerializer, BaseSerializer, LoginSerializer, TokenSerializer
+from .serializers import ReadOnlySerializer, BaseSerializer, LoginSerializer, TokenSerializer, UpdateBaseSerializer
 from .serializers import DeactiveSerializer, ChangePasswordSerializer, SetPasswordSerializer
 
 from auth.tasks import save_activity
@@ -23,7 +23,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+class ReadOnlyViewSet(viewsets.ModelViewSet):
     # permission_classes = (UserPermission,)
     queryset = Auth.objects.all()
     serializer_class = ReadOnlySerializer
@@ -56,7 +56,7 @@ class ReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-        
+
 
 
 class Create(APIView):
@@ -95,6 +95,73 @@ class Create(APIView):
                 except Auth.DoesNotExist:
                     try:
                         user = Auth.objects.create(loginID=loginID, password=password, appID_id=appID, deviceID=deviceID, is_active=True)
+                        user.save()
+                    except Exception as e:
+                        print(e)
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                    try:
+                        payload = {
+                            "loginID": loginID,
+                            "appID": serializer.validated_data['appID'],
+                            "deviceID": deviceID,
+                            "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
+                        }
+
+                        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+                        token_t = Token.objects.create(user=user, token=token, deviceID=deviceID)
+                        token_t.save()
+                    except Exception as e:
+                        print(e)
+                        user.delete()
+                        return Response(status=status.HTTP_424_FAILED_DEPENDENCY)
+
+                    # response['message'] = "User Created Successfully!"
+                    return Response(status=status.HTTP_201_CREATED)
+
+                except Exception as e:
+                    print(e)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            if serializer.errors['non_field_errors']:
+                response['loginID and appID'] = ['Combination of loginID and appID Already Exists!']
+                return Response(response, status=status.HTTP_409_CONFLICT)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print(e)
+            return Response(e,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class Update(APIView):
+    # Since user will be created by other application
+    # permission_classes = (HasToken,)
+
+    def post(self, request, format=None):
+        serializer = UpdateBaseSerializer(data=request.data)
+        response = {}
+        try:
+            if serializer.is_valid():
+                loginID = serializer.validated_data['loginID']
+                deviceID = serializer.validated_data['deviceID']
+                appID = serializer.validated_data['appID']
+
+
+                if " " in loginID:
+                    response['loginID'] = ["no whitespace allowed in loginID"]
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+                try:
+                    user = Auth.objects.get(loginID=loginID, appID=appID)
+                    response['loginID and appID'] = ['Combination of loginID and appID Already Exists!']
+                    print("login id and appid existence")
+                    print(response)
+                    return Response(response, status=status.HTTP_409_CONFLICT)
+
+                except Auth.DoesNotExist:
+                    try:
+                        userPass = Auth.objects.filter(loginID=loginID, is_active=True).first()
+                        user = Auth.objects.create(loginID=loginID, password=userPass.password, appID_id=appID, deviceID=deviceID, is_active=True)
                         user.save()
                     except Exception as e:
                         print(e)

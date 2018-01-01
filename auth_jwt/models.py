@@ -20,7 +20,7 @@ class Auth(models.Model):
 
 
 class Token(models.Model):
-    user = models.ForeignKey(Auth, on_delete=models.PROTECT, db_index=True)
+    user = models.ForeignKey(Auth, db_index=True)
     token = models.TextField(null=True)
     deviceID = models.TextField(db_index=True)
     createdAT = models.DateTimeField(auto_now_add=True, auto_now=False)
