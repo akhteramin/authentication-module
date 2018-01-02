@@ -45,8 +45,7 @@ class ReadOnlyViewSet(viewsets.ModelViewSet):
             account_status = request.query_params.get('is_active')
         except ValueError:
             account_status = ''
-        print(account_status)
-        if account_status is True:
+        if account_status == 'True':
             if login_id != '' and app_id != '':
                 queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=True)
             elif login_id == '' and app_id != '':
@@ -55,7 +54,7 @@ class ReadOnlyViewSet(viewsets.ModelViewSet):
                 queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None), is_active=True)
             else:
                 queryset = Auth.objects.all()
-        elif account_status is False:
+        elif account_status == 'False':
             if login_id != '' and app_id != '':
                 queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=False)
             elif login_id == '' and app_id != '':
@@ -645,6 +644,7 @@ class ReactiveAccount(APIView):
     def put(self, request, format=None):
         try:
             token = request.META['HTTP_TOKEN']
+            print(token)
             payload = jwt.decode(token, SECRET_KEY)
 
             serializer = DeactiveSerializer(data=request.data)
@@ -652,6 +652,7 @@ class ReactiveAccount(APIView):
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
                 appID = serializer.validated_data['appID']
+
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -659,7 +660,6 @@ class ReactiveAccount(APIView):
                 user = Auth.objects.get(loginID=loginID, appID=appID, is_active=False)
                 user.is_active = True
                 user.save()
-
                 token_t = Token.objects.filter(user=user).update(token=None)
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Auth.DoesNotExist:
