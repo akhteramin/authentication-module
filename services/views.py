@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
-    # permission_classes = (ServicePermission,)
+    permission_classes = (ServicePermission,)
 
     queryset = ServiceList.objects.all()
     serializer_class = ServiceSerializer
@@ -54,7 +54,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (ServicePermission,)
+    permission_classes = (ServicePermission,)
 
     queryset = ServiceList.objects.all()
     serializer_class = ServiceSerializer

@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class ReadOnlyViewSet(viewsets.ModelViewSet):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
     queryset = Auth.objects.all()
     serializer_class = ReadOnlySerializer
 
@@ -82,7 +82,7 @@ class ReadOnlyViewSet(viewsets.ModelViewSet):
 
 
 class GetUserViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
     queryset = Auth.objects.all()
     serializer_class = ReadOnlySerializer
 
@@ -137,7 +137,7 @@ class GetUserViewSet(viewsets.ReadOnlyModelViewSet):
 
 class Create(APIView):
     # Since user will be created by other application
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def post(self, request, format=None):
         serializer = BaseSerializer(data=request.data)
@@ -211,7 +211,7 @@ class Create(APIView):
 
 class Update(APIView):
     # Since user will be created by other application
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def post(self, request, format=None):
         serializer = UpdateBaseSerializer(data=request.data)
@@ -336,7 +336,7 @@ class Login(APIView):
 
 
 class Logout(APIView):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
@@ -366,7 +366,7 @@ class Logout(APIView):
 
 
 class Verify(APIView):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
@@ -395,7 +395,7 @@ class Verify(APIView):
 
 
 class VerifyAllApp(APIView):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
     def get(self, request, format=None):
         try:
             token = request.META['HTTP_TOKEN']
@@ -467,7 +467,7 @@ class CheckPermission(APIView):
 
 
 class Refresh(APIView):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
@@ -510,7 +510,7 @@ class Refresh(APIView):
 
 
 class ChangePassword(APIView):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def put(self, request, format=None):
         try:

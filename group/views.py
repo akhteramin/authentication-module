@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
-    # permission_classes = (GroupPermission,)
+    permission_classes = (GroupPermission,)
     queryset = GroupList.objects.all()
     serializer_class = GroupSerializer
     @list_route(url_path='')
