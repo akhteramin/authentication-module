@@ -11,7 +11,7 @@ from app.views import AppViewSet
 from email_domain.views import EmailViewSet
 from group.views import GroupViewSet, GetGroupViewSet
 from services.views import ServiceViewSet, GetServiceViewSet,GetServiceUserViewSet
-from auth_jwt.views import ReadOnlyViewSet
+from auth_jwt.views import ReadOnlyViewSet, GetUserViewSet
 from acl.views import ACLViewSet, GetACLViewSet
 from user_group.views import UserGroupViewSet, GetUserGroupViewSet
 from activity.views import ActivityViewSet
@@ -40,6 +40,8 @@ router.register(r'user_group', UserGroupViewSet)
 router.register(r'user_group/details', GetUserGroupViewSet)
 
 router.register(r'user', ReadOnlyViewSet)
+router.register(r'user/filtered/userlist', GetUserViewSet)
+
 # router.register(r'user/filtered/userlist', ReadOnlyViewSet)
 
 

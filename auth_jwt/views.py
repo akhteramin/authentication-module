@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class ReadOnlyViewSet(viewsets.ModelViewSet):
-    # permission_classes = (UserPermission,)
+    # permission_classes = (HasToken,)
     queryset = Auth.objects.all()
     serializer_class = ReadOnlySerializer
 
@@ -32,7 +32,7 @@ class ReadOnlyViewSet(viewsets.ModelViewSet):
     def get(self, request):
         login_id = ''
         app_id = ''
-        # account_status= ''
+        account_status= ''
         try:
             login_id=request.query_params.get('login_id')
         except ValueError:
@@ -41,15 +41,39 @@ class ReadOnlyViewSet(viewsets.ModelViewSet):
             app_id=request.query_params.get('app_id')
         except ValueError:
             app_id=''
-
-        if login_id != '' and app_id != '':
-            queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=True)
-        elif login_id == '' and app_id != '':
-            queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None), is_active=True)
-        elif login_id != '' and app_id == '':
-            queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None), is_active=True)
+        try:
+            account_status = request.query_params.get('is_active')
+        except ValueError:
+            account_status = ''
+        print(account_status)
+        if account_status is True:
+            if login_id != '' and app_id != '':
+                queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=True)
+            elif login_id == '' and app_id != '':
+                queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None), is_active=True)
+            elif login_id != '' and app_id == '':
+                queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None), is_active=True)
+            else:
+                queryset = Auth.objects.all()
+        elif account_status is False:
+            if login_id != '' and app_id != '':
+                queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None), is_active=False)
+            elif login_id == '' and app_id != '':
+                queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None), is_active=False)
+            elif login_id != '' and app_id == '':
+                queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None), is_active=False)
+            else:
+                queryset = Auth.objects.all()
         else:
-            queryset = Auth.objects.all()
+            if login_id != '' and app_id != '':
+                queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None),appID=request.query_params.get('app_id', None))
+            elif login_id == '' and app_id != '':
+                queryset = Auth.objects.filter(appID=request.query_params.get('app_id', None))
+            elif login_id != '' and app_id == '':
+                queryset = Auth.objects.filter(loginID=request.query_params.get('login_id', None))
+            else:
+                queryset = Auth.objects.all()
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -58,6 +82,59 @@ class ReadOnlyViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class GetUserViewSet(viewsets.ReadOnlyModelViewSet):
+    # permission_classes = (HasToken,)
+    queryset = Auth.objects.all()
+    serializer_class = ReadOnlySerializer
+
+    @list_route(url_path='(?P<app_id>[0-9]+)/(?P<active>[0-9]+)')
+    def user(self, request, pk=None, active=None, app_id=None,login_id=None):
+        login_id = ''
+        try:
+            login_id=request.query_params.get('login_id')
+        except ValueError:
+            login_id=''
+        print(login_id)
+        if login_id is None:
+            try:
+                if active == '0':
+                    queryset = Auth.objects.filter(appID=app_id)
+                    serializer = self.get_serializer(queryset, many=True)
+                    return Response(serializer.data)
+                elif active == '1':
+                    queryset = Auth.objects.filter(appID=app_id, is_active=True)
+                    serializer = self.get_serializer(queryset, many=True)
+                    return Response(serializer.data)
+                elif active == '2':
+                    queryset = Auth.objects.filter(appID=app_id, is_active=False)
+                    serializer = self.get_serializer(queryset, many=True)
+                    return Response(serializer.data)
+            except jwt.ExpiredSignatureError:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+            except Exception as e:
+                print(e)
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            try:
+                if active == '0':
+                    queryset = Auth.objects.filter(appID=app_id, loginID=login_id)
+                    serializer = self.get_serializer(queryset, many=True)
+                    return Response(serializer.data)
+                elif active == '1':
+                    queryset = Auth.objects.filter(appID=app_id, is_active=True, loginID=login_id)
+                    serializer = self.get_serializer(queryset, many=True)
+                    return Response(serializer.data)
+                elif active == '2':
+                    queryset = Auth.objects.filter(appID=app_id, is_active=False, loginID=login_id)
+                    serializer = self.get_serializer(queryset, many=True)
+                    return Response(serializer.data)
+            except jwt.ExpiredSignatureError:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+            except Exception as e:
+                print(e)
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Create(APIView):
     # Since user will be created by other application
