@@ -336,7 +336,7 @@ class Login(APIView):
 
 
 class Logout(APIView):
-    permission_classes = (HasToken,)
+    # permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:
