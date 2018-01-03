@@ -309,7 +309,8 @@ class ServicePermission(permissions.BasePermission):
             result = permission_check(request, "AUTH_REPLACE_SERVICE")
         elif request.method == 'PUT':
             result = permission_check(request, "AUTH_UPDATE_SERVICE")
-
+        print("result::")
+        print(result)
         if result['status_code'] == 202:
             return True
         else:

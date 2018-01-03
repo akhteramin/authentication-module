@@ -51,7 +51,7 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class UserGroupViewSet(viewsets.ModelViewSet):
-    permission_classes = (UserGroupPermission,)
+    # permission_classes = (UserGroupPermission,)
     queryset = UserGroup.objects.all()
     serializer_class = UserGroupSerializer
 
