@@ -68,21 +68,19 @@ def permission_check(request, sid=None):
             return response
 
         result = token_validation_and_get_user(request)
-        print(result)
-        if result['status_code'] == 200:
-
+        status_code = result['status_code']
+        if status_code == 200:
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, SECRET_KEY)
+            dataset=[]
             if request.method == 'POST' or request.method == 'PATCH' or request.method == 'PUT':
                 body_unicode = request.body.decode('utf-8')
                 body = json.loads(body_unicode)
-                dataset = body['content']
-
+                dataset = body
             async_result = save_activity.delay(payload['loginID'], payload['appID'], service_id,dataset)
-            # return_value = async_result.get()
-            # print(return_value)
 
             user = result['user']
+            print(result['user'].loginID)
             if user.loginID in SUPERUSER:
                 response['status_code'] = 202
                 return response

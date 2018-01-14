@@ -1,7 +1,7 @@
 from rest_framework import viewsets,status
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
-from auth.permissions import ServicePermission
+from auth.permissions import ServicePermission, UserServicePermission
 from .models import ServiceList
 from .serializers import ServiceSerializer
 from acl.serializers import GetACLSerializer
@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
-    # permission_classes = (ServicePermission,)
+    permission_classes = (ServicePermission,)
 
     queryset = ServiceList.objects.all()
     serializer_class = ServiceSerializer
@@ -54,7 +54,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (ServicePermission,)
+    permission_classes = (ServicePermission,)
 
     queryset = ServiceList.objects.all()
     serializer_class = ServiceSerializer
@@ -75,7 +75,7 @@ class GetServiceViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class GetServiceUserViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (UserServicePermission,)
+    permission_classes = (UserServicePermission,)
 
     queryset = ACL.objects.all()
     serializer_class = GetACLSerializer

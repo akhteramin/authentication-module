@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
-from auth.permissions import HasToken, ACLPermission
+from auth.permissions import HasToken, ACLPermission, ACLDetailsPermission
 from auth.settings import SECRET_KEY, SUPERUSER
 from auth_jwt.models import Auth
 from user_group.models import UserGroup
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 
 class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (ACLDetailsPermission,)
+    permission_classes = (ACLDetailsPermission,)
     queryset = ACL.objects.all()
     serializer_class = GetACLSerializer
 
@@ -58,13 +58,13 @@ class GetACLViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ACLViewSet(viewsets.ModelViewSet):
-    # permission_classes = (ACLPermission,)
+    permission_classes = (ACLPermission,)
     queryset = ACL.objects.all()
     serializer_class = ACLSerializer
 
 
 class PermissionsList(APIView):
-    # permission_classes = (HasToken,)
+    permission_classes = (HasToken,)
 
     def get(self, request, format=None):
         try:

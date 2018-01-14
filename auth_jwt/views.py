@@ -572,6 +572,7 @@ class ChangePassword(APIView):
 
 class SetPassword(APIView):
     # permission_classes = (SetPasswordPermission,)
+    permission_classes = (HasToken,)
 
     def put(self, request, format=None):
         try:
@@ -606,6 +607,7 @@ class SetPassword(APIView):
 
 class DeactiveAccount(APIView):
     # permission_classes = (AccountActivatePermission,)
+    permission_classes = (HasToken,)
 
     def put(self, request, format=None):
         try:
@@ -640,6 +642,7 @@ class DeactiveAccount(APIView):
 
 class ReactiveAccount(APIView):
     # permission_classes = (AccountDeactivatePermission,)
+    permission_classes = (HasToken,)
 
     def put(self, request, format=None):
         try:

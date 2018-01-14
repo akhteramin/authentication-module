@@ -1,7 +1,7 @@
 from rest_framework import viewsets,status
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
-from auth.permissions import GroupPermission
+from auth.permissions import ActivityPermission, SearchActivityPermission
 from .models import Activity
 from .serializers import ActivitySerializer
 
@@ -11,14 +11,14 @@ log = logging.getLogger(__name__)
 
 
 class ActivityViewSet(viewsets.ModelViewSet):
-    # permission_classes = (ActivityPermission,)
+    permission_classes = (ActivityPermission,)
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
 
 
     @list_route(url_path='')
     def get(self, request):
-        # permission_classes = (SearchActivityPermission,)
+        permission_classes = (SearchActivityPermission,)
         login_id = ''
         app_id = ''
         service=''

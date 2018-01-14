@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import list_route
-from auth.permissions import UserGroupPermission
+from auth.permissions import UserGroupPermission, HasToken
 from .models import UserGroup
 from .serializers import UserGroupSerializer, GetUserGroupSerializer, GetGroupSerializer, GetUserSerializer
 
@@ -15,12 +15,15 @@ log = logging.getLogger(__name__)
 
 class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     # permission_classes = (UserGroupDetailsPermission,)
+    permission_classes = (UserGroupPermission,)
+
     queryset = UserGroup.objects.all()
     serializer_class = GetUserGroupSerializer
 
     @list_route(url_path='user/(?P<user_id>[0-9]+)')
     def user(self, request, pk=None, user_id=None):
         # permission_classes = (UserGroupDetailsByGroupPermission,)
+        permission_classes = (UserGroupPermission,)
         try:
             queryset = UserGroup.objects.filter(user=user_id)
             serializer = GetGroupSerializer(queryset, many=True)
@@ -37,6 +40,7 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='group/(?P<group_id>[0-9]+)')
     def group(self, request, pk=None, group_id=None):
         # permission_classes = (UserGroupDetailsByUserPermission,)
+        permission_classes = (UserGroupPermission,)
         try:
             queryset = UserGroup.objects.filter(group=group_id)
             serializer = GetUserSerializer(queryset, many=True)
@@ -51,7 +55,7 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class UserGroupViewSet(viewsets.ModelViewSet):
-    # permission_classes = (UserGroupPermission,)
+    permission_classes = (UserGroupPermission,)
     queryset = UserGroup.objects.all()
     serializer_class = UserGroupSerializer
 

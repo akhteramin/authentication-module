@@ -1,7 +1,7 @@
 from rest_framework import viewsets,status
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
-from auth.permissions import GroupPermission
+from auth.permissions import GroupPermission,GroupFilterPermission
 from .models import GroupList
 from .serializers import GroupSerializer
 
@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
-    # permission_classes = (GroupPermission,)
+    permission_classes = (GroupPermission,)
     queryset = GroupList.objects.all()
     serializer_class = GroupSerializer
     @list_route(url_path='')
@@ -50,7 +50,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 
 class GetGroupViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = (GroupFilterPermission,)
+    permission_classes = (GroupFilterPermission,)
     queryset = GroupList.objects.all()
     serializer_class = GroupSerializer
 
