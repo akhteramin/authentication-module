@@ -40,7 +40,7 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(url_path='group/(?P<group_id>[0-9]+)')
     def group(self, request, pk=None, group_id=None):
         # permission_classes = (UserGroupDetailsByUserPermission,)
-        permission_classes = (UserGroupPermission,)
+        permission_classes = (HasToken,)
         try:
             queryset = UserGroup.objects.filter(group=group_id)
             serializer = GetUserSerializer(queryset, many=True)
