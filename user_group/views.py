@@ -41,6 +41,7 @@ class GetUserGroupViewSet(viewsets.ReadOnlyModelViewSet):
     def group(self, request, pk=None, group_id=None):
         # permission_classes = (UserGroupDetailsByUserPermission,)
         permission_classes = (HasToken,)
+        print("group koi bujtac na")
         try:
             queryset = UserGroup.objects.filter(group=group_id)
             serializer = GetUserSerializer(queryset, many=True)
