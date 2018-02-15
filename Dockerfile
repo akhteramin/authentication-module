@@ -1,7 +1,7 @@
 FROM python:3.6
 
-ENV APP_DIR /opt/spider/auth
-ENV PORT 8000
+ENV APP_DIR /admin_auth
+#ENV PORT 8000
 
 RUN mkdir -p ${APP_DIR}
 WORKDIR APP_DIR
@@ -18,4 +18,5 @@ RUN python manage.py migrate
 
 ENTRYPOINT [ "python" ]
 
+CMD [ "celery", "-A", "auth", "worker" "-l", "info"]
 CMD [ "manage.py", "runserver", "0.0.0.0:8000"]
