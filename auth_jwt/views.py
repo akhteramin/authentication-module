@@ -342,7 +342,7 @@ class Logout(APIView):
         try:
             token = request.META['HTTP_TOKEN']
             payload = jwt.decode(token, verify=False)
-            user = Auth.objects.filter(loginID=payload['loginID'], is_active=True)
+            user = Auth.objects.filter(loginID=payload['loginID'], deviceID=payload['deviceID'], is_active=True)
 
             async_result = save_activity.delay(payload['loginID'], payload['appID'], 'AUTH_LOGOUT_USER', '')
             # return_value = async_result.get()
