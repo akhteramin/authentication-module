@@ -516,7 +516,6 @@ class ChangePassword(APIView):
         try:
             token = request.META['HTTP_TOKEN']
             serializer = ChangePasswordSerializer(data=request.data)
-
             if serializer.is_valid():
                 loginID = serializer.validated_data['loginID']
                 appID = serializer.validated_data['appID']
@@ -530,11 +529,11 @@ class ChangePassword(APIView):
             try:
                 if payload['loginID'] == loginID:
                     user = Auth.objects.get(loginID=loginID, appID=appID, is_active=True)
-                    token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
-
+                    # token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
                     if bcrypt_sha256.verify(old_password, user.password):
-                        user.password = bcrypt_sha256.hash(new_password)
-                        user.save()
+                        # user.password = bcrypt_sha256.hash(new_password)
+                        # user.save()
+                        user_save = Auth.objects.filter(loginID=loginID, is_active=True).update(password=bcrypt_sha256.hash(new_password))
 
                         new_payload = {
                             "loginID": user.loginID,
@@ -543,6 +542,7 @@ class ChangePassword(APIView):
                             "exp": datetime.utcnow() + timedelta(seconds=TOKEN_LIFE_TIME)
                         }
 
+                        token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
                         token = jwt.encode(new_payload, SECRET_KEY, algorithm='HS256')
                         token_t.token = token
                         token_t.save()
@@ -557,9 +557,11 @@ class ChangePassword(APIView):
                     return Response(status=status.HTTP_403_FORBIDDEN)
 
             except Auth.DoesNotExist:
+                print("auth invalid")
                 return Response(status=status.HTTP_412_PRECONDITION_FAILED)
 
             except Token.DoesNotExist:
+                print("token invalid")
                 return Response(status=status.HTTP_412_PRECONDITION_FAILED)
 
         except jwt.ExpiredSignatureError:
