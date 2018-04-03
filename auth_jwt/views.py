@@ -530,6 +530,9 @@ class ChangePassword(APIView):
                 if payload['loginID'] == loginID:
                     user = Auth.objects.get(loginID=loginID, appID=appID, is_active=True)
                     # token_t = Token.objects.get(user=user, token=token, deviceID=payload['deviceID'])
+                    if bcrypt_sha256.verify(new_password, user.password):
+                        return Response(status=status.HTTP_409_CONFLICT)
+
                     if bcrypt_sha256.verify(old_password, user.password):
                         # user.password = bcrypt_sha256.hash(new_password)
                         # user.save()
