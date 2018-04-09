@@ -109,3 +109,4 @@ settings.json
 application.properties
 
 .idea/*
+Dockerfile
