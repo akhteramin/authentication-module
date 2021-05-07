@@ -9,9 +9,9 @@ Application name and description can be edited.
 Users are registered here subscribing specific applications. That is while registering a user, he/she can be assigned to one/multiple applications. But these assignment will be done with respect to user type. Default password is also set by Auth Superuser.
 ## User - User Activation/Suspend: ##
 An user can be suspended or activated from user list.
-## Set Password of User:## 
+## Set Password of User: ## 
 User password can be set by Auth Superuser from user list.
-## Assign User to Application:## 
+## Assign User to Application: ## 
 User’s permission to specific app can be revoked but all application permission can;t be revoked. Thus when Auth Superadmin need to remove user from all application he/she can deactivate User from all applications.
 ## User Search:## 
 From User list user can be searched based on Login  ID and Application ID
@@ -35,10 +35,10 @@ By selecting services, services can be assigned to specific group. As well as, s
 ## Group to User Assignment - Group assign to User: ##
 By selecting multiple groups, groups can be assigned to specific group. As well as, group permission can also be revoked from user. If user is assigned to multiple groups, service list from all groups are provided in permission list while logging in.
 
-##Application Switching##
+## Application Switching ##
 All subscribed applications are shown here. From where user can easily switch from auth to another application.
 
-##Application Authentication##
+## Application Authentication ##
 Central Auth backend provides User-wise Permission List, store Service List, Authenticate each Service ID requested from different Module, validate Token, maintain token life expire time, define Email Dmain of User, and employ celery to manage concurrenct activity.
 
 
