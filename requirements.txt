@@ -11,7 +11,7 @@ conda==4.3.16
 coreapi==2.3.0
 coreschema==0.0.4
 cryptography==2.1.4
-Django==1.10.6
+Django==2.2.24
 django-celery-beat==1.0.1
 django-celery-results==1.0.1
 django-cors-headers==2.0.2
